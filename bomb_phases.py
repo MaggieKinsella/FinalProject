@@ -1,8 +1,8 @@
-#################################
+####################################################
 # CSC 102 Defuse the Bomb Project
 # GUI and Phase class definitions
-# Team: 
-#################################
+# Team: Maggie Kinsella, Leslye Cleare, Abigail Noll
+####################################################
 
 # import the configs
 from bomb_configs import *
@@ -168,6 +168,10 @@ class Timer(PhaseThread):
                 if (self._value == 0):
                     self._running = False
                 self._value -= 1
+                # add reset function into run subroutine
+                # reset the timer if it reaches 1 minute
+                if self._value == 60:
+                    self.reset()
             else:
                 sleep(0.1)
 
@@ -175,6 +179,12 @@ class Timer(PhaseThread):
     def _update(self):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
+
+    # Reset the timer to the initial value
+    def reset(self):
+        self._value = self._initial_value
+        self._component.print("Resetting Timer")
+        print("Timer reset to: ", self._initial_value)
 
     # pauses and unpauses the timer
     def pause(self):
@@ -193,6 +203,7 @@ class Keypad(PhaseThread):
         super().__init__(name, component, target)
         # the default value is an empty string
         self._value = ""
+        
 
     # runs the thread
     def run(self):
@@ -208,8 +219,16 @@ class Keypad(PhaseThread):
                     except:
                         key = ""
                     sleep(0.1)
+
+                # Feature limits the maximum number of characters used in keypad to 4 numbers
+                if len(self._value) < self._max_characters:
+                    # log the key
+                    self._value += str(key)
+                else:
+                    # keeps only the last 4 numbers in string
+                    self._value = self._value[1:] + str(key) 
+                    
                 # log the key
-                self._value += str(key)
                 # the combination is correct -> phase defused
                 if (self._value == self._target):
                     self._defused = True
@@ -223,13 +242,14 @@ class Keypad(PhaseThread):
         if (self._defused):
             return "DEFUSED"
         else:
-            return self._value
+            # Always shows last 4 characters
+            return self._value[-self._max_characters:]
 
 # the jumper wires phase
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
         super().__init__(name, component, target)
-
+        
     # runs the thread
     def run(self):
         # TODO
@@ -257,6 +277,8 @@ class Button(PhaseThread):
         self._color = color
         # we need to know about the timer (7-segment display) to be able to determine correct pushbutton releases in some cases
         self._timer = timer
+        # Feature initializes button press count
+        self._press_count = 0 # start value 0
 
     # runs the thread
     def run(self):
@@ -285,6 +307,8 @@ class Button(PhaseThread):
                         self._failed = True
                     # note that the pushbutton was released
                     self._pressed = False
+                    # increments the press count by 1 on release
+                    self._press_count += 1
             sleep(0.1)
 
     # returns the pushbutton's state as a string
@@ -292,7 +316,8 @@ class Button(PhaseThread):
         if (self._defused):
             return "DEFUSED"
         else:
-            return str("Pressed" if self._value else "Released")
+            # prints how many times the button has been pressed
+            return f"Press Count: {self._press_count}, {'Pressed' if self._value else 'Released'}"
 
 # the toggle switches phase
 class Toggles(PhaseThread):
