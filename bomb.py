@@ -1,7 +1,7 @@
 #################################
 # CSC 102 Defuse the Bomb Project
 # Main program
-# Team: 
+# Team: Leslye, Maggie, Abigail
 #################################
 
 # import the configs
