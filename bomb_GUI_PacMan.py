@@ -1,5 +1,4 @@
 from tkinter import *
-import pygame
 
 class PacManApp(Frame):
     def __init__(self, window):
