@@ -104,10 +104,10 @@ class PacManApp(Frame):
 
         # Bind keys
         # Control up, down, left, right
-        self.window.bind("2", lambda event: self.move(0, -10))  # Up
-        self.window.bind("4", lambda event: self.move(-10, 0))  # Left
-        self.window.bind("6", lambda event: self.move(10, 0))   # Right
-        self.window.bind("8", lambda event: self.move(0, 10))   # Down
+        self.window.bind("2", lambda event: self.move(0, -15))  # Up
+        self.window.bind("4", lambda event: self.move(-15, 0))  # Left
+        self.window.bind("6", lambda event: self.move(15, 0))   # Right
+        self.window.bind("8", lambda event: self.move(0, 15))   # Down
         
         # Start ghost movement
         self.chase_pacman()
