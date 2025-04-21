@@ -18,16 +18,15 @@ class PacManApp(Frame):
 
         self.game_running = True
 
-
         # Create obstacles (list of canvas rectangle IDs)
         self.obstacles = [
             # (x1, y1),(x2, y2)
             # 1st obsticle (top left)
-            self.canvas.create_rectangle(60, 60, 125, 75, fill="black", outline="blue", width=5), # horizontal
+            self.canvas.create_rectangle(60, 60, 120, 75, fill="black", outline="blue", width=5), # horizontal
             self.canvas.create_rectangle(60, 60, 75, 180, fill="black", outline="blue", width=5), # verticle
             
             # 2nd obsticle (bottom left)
-            self.canvas.create_rectangle(60, 375, 125, 390, fill="black", outline="blue", width=5), # horizontal
+            self.canvas.create_rectangle(60, 375, 120, 390, fill="black", outline="blue", width=5), # horizontal
             self.canvas.create_rectangle(60, 375, 75, 255, fill="black", outline="blue", width=5), # verticle
             
             # 3rd obsticle (top middle left)
@@ -49,11 +48,11 @@ class PacManApp(Frame):
             self.canvas.create_rectangle(505, 375, 520, 450, fill="black", outline="blue", width=5), # verticle
             
             # 9th obsticle (top right)
-            self.canvas.create_rectangle(625, 60, 575, 75, fill="black", outline="blue", width=5), # horizontal
+            self.canvas.create_rectangle(625, 60, 580, 75, fill="black", outline="blue", width=5), # horizontal
             self.canvas.create_rectangle(625, 60, 640, 180, fill="black", outline="blue", width=5), # verticle
             
             # 10th obsticle (bottom right)
-            self.canvas.create_rectangle(640, 390, 575, 375, fill="black", outline="blue", width=5), # horizontal
+            self.canvas.create_rectangle(640, 390, 580, 375, fill="black", outline="blue", width=5), # horizontal
             self.canvas.create_rectangle(640, 390, 625, 255, fill="black", outline="blue", width=5), # verticle
             
             # 11th obsticle (top right center)
