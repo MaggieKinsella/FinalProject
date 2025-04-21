@@ -1,0 +1,36 @@
+#INTRO SCREEN BEFORE BOMB
+
+import tkinter as tk
+
+# Create main window
+root = tk.Tk()
+root.title("Black Text Screen")
+root.configure(bg="black")
+root.geometry("600x400")
+
+# Create a read-only text display
+text_display = tk.Text(root, bg="black", fg="white", font=("Courier", 40), state='disabled')
+text_display.pack(expand=True, fill='both', padx=10, pady=10)
+
+# Subroutine which gives type writer class which takes in text and delay and prints it depending on what you give it
+def typewriter(text, delay=100, linebreak=True):
+    def inner(i=0):
+        if i < len(text):
+            text_display.configure(state='normal')
+            text_display.insert(tk.END, text[i])
+            text_display.configure(state='disabled')
+            text_display.see(tk.END)
+            root.after(delay, inner, i+1)
+        elif linebreak:
+            text_display.configure(state='normal')
+            text_display.insert(tk.END, "\n")
+            text_display.configure(state='disabled')
+            text_display.see(tk.END)
+    inner()
+
+# Example usage
+typewriter("DEFUSE THE BOMB", delay=100)
+root.after(2500, lambda: typewriter("TIME REMAINING: 00:05", delay=80))
+
+# Run the GUI
+root.mainloop()
