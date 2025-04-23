@@ -150,6 +150,13 @@ def check_phases():
     # check the phases again after a slight delay
     gui.after(100, check_phases)
 
+# Call PacManApp subroutine from bomb_GUI_PacMan file
+def launch_pacman():
+    pacman_window = tk.Toplevel()
+    pacman_window.title("PacMan Game")
+    game = PacManApp(pacman_window)
+    game.start()
+
 # handles a strike
 def strike():
     global strikes_left
@@ -177,13 +184,18 @@ def turn_off():
 # MAIN
 ######
 
-# initialize the LCD GUI
-window = Tk()
-gui = Lcd(window)
+# initialize the LCD GUI and root window
+root = tk.Tk()
+gui = Lcd(root)
+root.title("Defuse the Bomb")
 
 # initialize the bomb strikes and active phases (i.e., not yet defused)
 strikes_left = NUM_STRIKES
 active_phases = NUM_PHASES
+
+# Add Play Pac-Man button to the root GUI
+pacman_button = tk.Button(root, text="Play Pac-Man", command=launch_pacman)
+pacman_button.pack(pady=20)
 
 # "boot" the bomb
 gui.after(1000, bootup)
