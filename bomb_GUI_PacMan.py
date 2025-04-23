@@ -4,7 +4,9 @@ class PacManApp(Frame):
     def __init__(self, window):
         self.window = window
         self.window.title("PacMan")
-
+        # make the GUI fullscreen
+        window.attributes("-fullscreen", True)
+        
         self.canvas = Canvas(window, width=700, height=450, bg="black")
         self.canvas.pack()
 
