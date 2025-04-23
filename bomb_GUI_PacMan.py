@@ -10,14 +10,14 @@ class PacManApp(Frame):
 
         # Create Pac-Man
         self.pacman = self.canvas.create_arc(100, 320, 140, 360, start=45, extent=270, fill="yellow", outline="orange")\
-        
+
         # Create ghost (red)
         self.ghost = self.canvas.create_oval(600, 410, 630, 440, fill="red", outline="pink")
         # Create second ghost (cyan)
         self.ghost2 = self.canvas.create_oval(10, 10, 40, 40, fill="cyan")
 
         self.game_running = True
-
+        
         # Create obstacles (list of canvas rectangle IDs)
         self.obstacles = [
             # (x1, y1),(x2, y2)
@@ -75,16 +75,16 @@ class PacManApp(Frame):
             self.canvas.create_rectangle(130, 255, 180, 270, fill="black", outline="blue", width=5), # horizontal
             
             # Left Border Wall
-            self.canvas.create_rectangle(0, 0, 0, 450, fill="black", outline="black"), # verticle
+            self.canvas.create_rectangle(0, 0, 1, 450, fill="black", outline="black"), # verticle
             
             # Top Border Wall
-            self.canvas.create_rectangle(0, 0, 700, 0, fill="black", outline="black"), # horizontal
+            self.canvas.create_rectangle(0, 0, 700, 1, fill="black", outline="black"), # horizontal
             
             # Right Border Wall
-            self.canvas.create_rectangle(700, 0, 700, 450, fill="black", outline="black"), # verticle
+            self.canvas.create_rectangle(699, 0, 700, 450, fill="black", outline="black"), # verticle
             
             # Bottom Border Wall
-            self.canvas.create_rectangle(0, 450, 800, 450, fill="black", outline="black"), # horizontal
+            self.canvas.create_rectangle(0, 449, 800, 450, fill="black", outline="black"), # horizontal
             
         ]
 
@@ -103,10 +103,10 @@ class PacManApp(Frame):
 
         # Bind keys
         # Control up, down, left, right
-        self.window.bind("2", lambda event: self.move(0, -15))  # Up
-        self.window.bind("4", lambda event: self.move(-15, 0))  # Left
-        self.window.bind("6", lambda event: self.move(15, 0))   # Right
-        self.window.bind("8", lambda event: self.move(0, 15))   # Down
+        self.window.bind("<Up>", lambda event: self.move(0, -15))  # Up
+        self.window.bind("<Left>", lambda event: self.move(-15, 0))  # Left
+        self.window.bind("<Right>", lambda event: self.move(15, 0))   # Right
+        self.window.bind("<Down>", lambda event: self.move(0, 15))   # Down
         
         # Start ghost movement
         self.chase_pacman()
@@ -137,15 +137,15 @@ class PacManApp(Frame):
          # Check win condition
         if not self.collectibles:
             self.game_running = False
-            self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
-
+            self.canvas.create_text(350, 225, text="Winner!", fill="white", font=("Arial", 90))
+            
     # ghost chase
     def chase_pacman(self):
         if not self.game_running:
             return
         
         self.move_ghost_toward_pacman(self.ghost)
-        self.window.after(110, self.chase_pacman)
+        self.window.after(100, self.chase_pacman)
 
     # ghost2 chase
     def chase_pacman2(self):
@@ -159,7 +159,7 @@ class PacManApp(Frame):
             self.game_running = False
             self.canvas.create_text(350, 225, text="Game Over", fill="white", font=("Arial", 90))
 
-        self.window.after(100, self.chase_pacman2)
+        self.window.after(90, self.chase_pacman2)
 
     # Ghost movements
     def move_ghost_toward_pacman(self, ghost):
@@ -170,6 +170,8 @@ class PacManApp(Frame):
         ghost_y = (ghost_coords[1] + ghost_coords[3]) / 2
         pacman_x = (pacman_coords[0] + pacman_coords[2]) / 2
         pacman_y = (pacman_coords[1] + pacman_coords[3]) / 2
+        
+        move_options = []
 
         # Determines the ghosts movements
         if ghost == self.ghost:
@@ -227,6 +229,7 @@ class PacManApp(Frame):
         x1, y1, x2, y2 = coords1
         a1, b1, a2, b2 = coords2
         return not (x2 < a1 or x1 > a2 or y2 < b1 or y1 > b2)
+
 
 # Run GUI
 window = Tk()
