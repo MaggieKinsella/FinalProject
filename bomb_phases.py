@@ -228,34 +228,19 @@ class Keypad(PhaseThread):
 # the jumper wires phase
 class Wires(PhaseThread):
     def __init__(self, component, target, name="Wires"):
-    super ().__init__(name, component, target)
-    self.cut = [True] * len(target) #start with all wires intact
+        super().__init__(name, component, target)
 
+#runs the thread
     def run(self):
         self._running = True
         while self._running:
-            self._value = self._component.value
-            if self._value: #if user is interacting
-                for i in range(len(self._value)):
-                    #flip cut/uncut state when the wire is pulled
-                    if self._value[i]:
-                        self._cut[i] = not self._cut[i]
-
-                sleep(0.5) #debounce delay
-            #check result
-            if self._cut == self._target:
+        #check current jumper wire connections
+            self._vaue = self._component.value #should return the current state (a list of True/ False)
+            #if all wires match the target pattern, defuse this phase
+            if self._value == self._target:
                 self._defused = True
-            elif self._cut != self._target and any(self._cut[i] !=self._target[i] for i in range(len(self._cut))):
-                self._failed = True
-            sleep (0.1)
-            
-     def __str__(self):
-         if self._defused:
-             return "DEFUSED"
-         elif self._cut:
-             return f"{self._cut}"
-         else:
-             return "Waiting..."
+            #if they mismatch and are same length (user attempted configuration), trigger failure
+                
                  
 
 # the pushbutton phase
