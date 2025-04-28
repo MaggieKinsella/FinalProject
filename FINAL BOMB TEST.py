@@ -208,7 +208,7 @@ def run(self):
     while self._running:
         #Read each wire and build a binary string
         self._value = "".join([str(int(pin.value())) for pin in self._pins])
-        print(f"Wire state: {self._va;ue}") #for debugging
+        print(f"Wire state: {self._value}") #for debugging
         
         if self._value == self.correct_value:
             print("Correct wire order! Phase complete.")
