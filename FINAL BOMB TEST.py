@@ -269,6 +269,8 @@ class Toggles(PhaseThread):
         self._value = ""
         # the toggle switch pins
         self._pins = pins
+        # password for toggles (on,on,off,on)
+        self._password = "1101"
 
     # runs the thread
     def run(self):
@@ -278,6 +280,10 @@ class Toggles(PhaseThread):
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
             sleep(0.1)
         self._running = False
+        
+    def check_password(self):
+        # Returns True if current toggles match the password
+        return self._value == self._password
 
     def __str__(self):
         return f"{self._value}/{int(self._value, 2)}"
