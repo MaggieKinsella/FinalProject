@@ -69,6 +69,7 @@ class Lcd(Frame):
         pacman_window = Toplevel(self)
         pacman_app = PacManApp(pacman_window)  # Launch the Pac-Man game in a new window
         self.pacman_app = pacman_app  # Store the Pac-Man app reference for future interactions
+        self.check_pacman_keypad()
 
     # binds the 7-segment display component to the GUI
     def setTimer(self, timer):
