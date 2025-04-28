@@ -184,25 +184,46 @@ class Keypad(PhaseThread):
     def __str__(self):
         return self._value
 
+
 # the jumper wires phase
-class Wires(PhaseThread):
-    def __init__(self, pins, name="Wires"):
-        super().__init__(name)
+from time import sleep
+from machine import Pin
+
+class Wires:
+    def __init__(self,LCD):
+        self.lcd = lcd
+        self.correct_value = "11010" #set the correct wire order
+        self._pins = [
+            Pin(14, Pin.IN), #Red wire
+            Pin(15, Pin.IN), #Orange wire
+            Pin(18, Pin.IN), #Yellow wire
+            Pin(23, Pin.IN), #White wire
+            Pin(24, Pin.IN), #Black wire
+        ]
         self._value = ""
-        # the jumper wire pins
-        self._pins = pins
-
-    # runs the thread
-    def run(self):
         self._running = True
-        while (True):
-            # get the jumper wire states (0->False, 1->True)
-            self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            sleep(0.1)
-        self._running = False
 
-    def __str__(self):
-        return f"{self._value}/{int(self._value, 2)}"
+def run(self):
+    self._running = True
+    while self._running:
+        #Read each wire and build a binary string
+        self._value = "".join([str(int(pin.value())) for pin in self._pins])
+        print(f"Wire state: {self._va;ue}") #for debugging
+        
+        if self._value == self.correct_value:
+            print("Correct wire order! Phase complete.")
+            
+            #Show success message on the LCD
+            self.lcd.clear()
+            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
+            
+            #Stop checking wires
+            self.running = False 
+        
+        sleep(0.1)
+
+    def reset(self):
+        self._running = False
 
 # the pushbutton phase
 class Button(PhaseThread):
