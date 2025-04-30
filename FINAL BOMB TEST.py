@@ -17,6 +17,8 @@ MAX_PASS_LEN = 11
 # does the asterisk (*) clear the passphrase?
 STAR_CLEARS_PASS = True
 
+
+
 # the LCD display "GUI"
 class Lcd(Frame):
     def __init__(self, window):
@@ -28,10 +30,14 @@ class Lcd(Frame):
         # the pushbutton's state
         self._button = None
         self.pacman_app = None
+        #add boolean flags to check if phases are complete before moving on 
+        self.wires_done = False
+        self.toggles_done = False
+        self.button_done = False
+        
         # setup the GUI
         self.setup()
-        # Launch PacMan Window
-
+        
     # sets up the LCD "GUI"
     def setup(self):
         # set column weights
@@ -64,12 +70,18 @@ class Lcd(Frame):
         # the quit button
         self._lquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Quit", command=self.quit)
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
-
+        
+    # checks if phases are complete before launching pacman window
+    def check_all_phases_complete(self):
+        if self.wires_done and self.toggles_done and self.button_done:
+            print("All phases complete. Launching PacMan!")
+            self._launch_pacman
+            
     def launch_pacman(self):
-        pacman_window = Toplevel(self)
-        pacman_app = PacManApp(pacman_window)  # Launch the Pac-Man game in a new window
-        self.pacman_app = pacman_app  # Store the Pac-Man app reference for future interactions
-        self.check_pacman_keypad()
+        if self.pacman_app is None:
+            import bomb_GUI_PacMan
+            self.pacman_app = pacman.App()
+            self.pacman_app.run()
 
     # binds the 7-segment display component to the GUI
     def setTimer(self, timer):
@@ -201,7 +213,7 @@ class Wires:
             Pin(24, Pin.IN), #Black wire
         ]
         self._value = ""
-        self._running = True
+        self._running = False # True
 
 def run(self):
     self._running = True
@@ -212,10 +224,13 @@ def run(self):
         
         if self._value == self.correct_value:
             print("Correct wire order! Phase complete.")
+            self.lcd.wires_done = True
+            self.lcd._lwires.config(text="Wires Complete")
+            self.lcd.check_all_phases_complete()
             
-            #Show success message on the LCD
-            self.lcd.clear()
-            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
+#            #Show success message on the LCD
+#            self.lcd.clear()
+#            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
             
             #Stop checking wires
             self.running = False 
@@ -248,8 +263,15 @@ class Button(PhaseThread):
             self._rgb[0].value = False if Button.colors[rgb_index] == "R" else True
             self._rgb[1].value = False if Button.colors[rgb_index] == "G" else True
             self._rgb[2].value = False if Button.colors[rgb_index] == "B" else True
+            
             # get the pushbutton's state
             self._value = self._state.value
+            if self._value:
+                print("Button pressed")
+                gui.button_done = True
+                gui._lbutton.config(text="Button Complete!")
+                gui.check_all_phases_complete()
+                self._running = False
             # increment the RGB counter
             rgb_counter += 1
             # switch to the next RGB color every 1s (10 * 0.1s = 1s)
@@ -264,29 +286,42 @@ class Button(PhaseThread):
 
 # the toggle switches phase
 class Toggles(PhaseThread):
-    def __init__(self, pins, name="Toggles"):
+    def __init__(self, LCD, pins, name="Toggles"):
         super().__init__(name)
-        self._value = ""
+        self.lcd = lcd
+        self.correct_value = "1101"
         # the toggle switch pins
-        self._pins = pins
-        # password for toggles (on,on,off,on)
-        self._password = "1101"
-
+        self._pins = [
+            self._pins = [
+            Pin(12, Pin.ON), #1st
+            Pin(16, Pin.ON), #2nd
+            Pin(20, Pin.OFF), #3rd
+            Pin(21, Pin.ON), #4th
+        ]
+        
+        self._value = ""
+        self._running = True
+        
     # runs the thread
     def run(self):
         self._running = True
         while (True):
             # get the toggle switch values (0->False, 1->True)
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
+            if self._value == self.correct_value:
+                print("Toggles Correct!")
+                gui.toggles_done = True
+                gui.ltoggles.config(text="Toggles Complete!")
+                gui.check_all_phases_complete()
+                self._running = False
             sleep(0.1)
         self._running = False
-        
-    def check_password(self):
-        # Returns True if current toggles match the password
-        return self._value == self._password
 
     def __str__(self):
         return f"{self._value}/{int(self._value, 2)}"
+
+    def reset(self):
+        self._running = False
 
 ######
 # MAIN
