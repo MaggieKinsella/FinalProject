@@ -75,7 +75,7 @@ class Lcd(Frame):
     def check_all_phases_complete(self):
         if self.wires_done and self.toggles_done and self.button_done:
             print("All phases complete. Launching PacMan!")
-            self._launch_pacman
+            self._launch_pacman()
             
     def launch_pacman(self):
         if self.pacman_app is None:
@@ -215,27 +215,27 @@ class Wires:
         self._value = ""
         self._running = False # True
 
-def run(self):
-    self._running = True
-    while self._running:
-        #Read each wire and build a binary string
-        self._value = "".join([str(int(pin.value())) for pin in self._pins])
-        print(f"Wire state: {self._value}") #for debugging
+    def run(self):
+        self._running = True
+        while self._running:
+            #Read each wire and build a binary string
+            self._value = "".join([str(int(pin.value())) for pin in self._pins])
+            print(f"Wire state: {self._value}") #for debugging
         
-        if self._value == self.correct_value:
-            print("Correct wire order! Phase complete.")
-            self.lcd.wires_done = True
-            self.lcd._lwires.config(text="Wires Complete")
-            self.lcd.check_all_phases_complete()
+            if self._value == self.correct_value:
+                print("Correct wire order! Phase complete.")
+                self.lcd.wires_done = True
+                self.lcd._lwires.config(text="Wires Complete")
+                self.lcd.check_all_phases_complete()
             
 #            #Show success message on the LCD
 #            self.lcd.clear()
 #            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
             
             #Stop checking wires
-            self.running = False 
+                self.running = False 
         
-        sleep(0.1)
+            sleep(0.1)
 
     def reset(self):
         self._running = False
@@ -268,9 +268,9 @@ class Button(PhaseThread):
             self._value = self._state.value
             if self._value:
                 print("Button pressed")
-                gui.button_done = True
-                gui._lbutton.config(text="Button Complete!")
-                gui.check_all_phases_complete()
+                self.lcd.button_done = True
+                self.lcd._lbutton.config(text="Button Complete!")
+                self.lcd.check_all_phases_complete()
                 self._running = False
             # increment the RGB counter
             rgb_counter += 1
@@ -292,7 +292,6 @@ class Toggles(PhaseThread):
         self.correct_value = "1101"
         # the toggle switch pins
         self._pins = [
-            self._pins = [
             Pin(12, Pin.ON), #1st
             Pin(16, Pin.ON), #2nd
             Pin(20, Pin.OFF), #3rd
