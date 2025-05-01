@@ -7,7 +7,7 @@ import board
 from adafruit_ht16k33.segments import Seg7x4
 from digitalio import DigitalInOut, Direction, Pull
 from adafruit_matrixkeypad import Matrix_Keypad
-from bomb_GUI_PacMan import PacManApp  # Import your PacManApp here
+# from bomb_GUI_PacMan import PacManApp  # Import your PacManApp here
 
 # constants
 # the bomb's initial countdown timer value (seconds)
@@ -16,8 +16,6 @@ COUNTDOWN = 300
 MAX_PASS_LEN = 11
 # does the asterisk (*) clear the passphrase?
 STAR_CLEARS_PASS = True
-
-
 
 # the LCD display "GUI"
 class Lcd(Frame):
@@ -53,7 +51,7 @@ class Lcd(Frame):
         self._ltoggles.grid(row=4, column=0, columnspan=2, sticky=W)
 
         self._lpacman = tkinter.Button(self, bg="green", fg="white", font=("Courier New", 24),
-                                       text="Play Pac-Man", command=self.launch_pacman, state=DISABLED)
+                                       text="Play Pac-Man", state=DISABLED)
         self._lpacman.grid(row=6, column=0, columnspan=2, pady=20)
 
         self._lpause = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Pause", command=self.pause)
@@ -181,19 +179,22 @@ class Keypad(PhaseThread):
 
 # the jumper wires phase
 from time import sleep
-from machine import Pin
+# from machine import Pin
+# from digitalio import DigitalInOut, Direction, Pull
+# import board
 
-class Wires:
-    def __init__(self, lcd, pins):
+class Wires(PhaseThread):
+    def __init__(self, lcd, pins, name="Wires"):
+        super().__init__(name)
         self.lcd = lcd
         self.correct_value = "11010" #set the correct wire order
-        self._pins = [
-            Pin(14, Pin.IN), #Red wire
-            Pin(15, Pin.IN), #Orange wire
-            Pin(18, Pin.IN), #Yellow wire
-            Pin(23, Pin.IN), #White wire
-            Pin(24, Pin.IN), #Black wire
-        ]
+        self._pins = pins
+#             Pin(14, Pin.IN), #Red wire
+#             Pin(15, Pin.IN), #Orange wire
+#             Pin(18, Pin.IN), #Yellow wire
+#             Pin(23, Pin.IN), #White wire
+#             Pin(24, Pin.IN), #Black wire
+#         ]
         self._value = ""
         self._running = False # True
 
@@ -201,7 +202,7 @@ class Wires:
         self._running = True
         while self._running:
             #Read each wire and build a binary string
-            self._value = "".join([str(int(pin.value())) for pin in self._pins])
+            self._value = "".join([str(int(pin.value)) for pin in self._pins])
             print(f"Wire state: {self._value}") #for debugging
         
             if self._value == self.correct_value:
@@ -223,7 +224,7 @@ class Wires:
         self._running = False
 
 # the pushbutton phase
-class Button(PhaseThread):
+class ogButton(PhaseThread):
     colors = [ "R", "G", "B" ]  # the button's possible colors
 
     def __init__(self, lcd, state, rgb, name="Button"):
@@ -275,13 +276,7 @@ class Toggles(PhaseThread):
         self.lcd = lcd
         self.correct_value = "1101"
         # the toggle switch pins
-        self._pins = [
-            Pin(12, Pin.IN), #1st
-            Pin(16, Pin.IN), #2nd
-            Pin(20, Pin.OUT), #3rd
-            Pin(21, Pin.IN), #4th
-        ]
-        
+        self._pins = pins
         self._value = ""
         self._running = True
         
@@ -305,28 +300,29 @@ class Toggles(PhaseThread):
 
     def reset(self):
         self._running = False
+        
+from tkinter import *
 
 class PacManApp(Frame):
     def __init__(self, window):
         super().__init__(window)
         self.window = window
         self.window.title("PacMan")
-#         self.pack()
+        self.pack()
         
-        # Size of screen on bomb
         self.canvas = Canvas(window, width=800, height=480, bg="black")
         self.canvas.pack()
 
         # Create Pac-Man
         self.pacman = self.canvas.create_arc(100, 320, 140, 360, start=45, extent=270, fill="yellow", outline="orange")\
-
+        
         # Create ghost (red)
         self.ghost = self.canvas.create_oval(600, 410, 630, 440, fill="red", outline="pink")
         # Create second ghost (cyan)
         self.ghost2 = self.canvas.create_oval(10, 10, 40, 40, fill="cyan")
 
         self.game_running = True
-        
+
         # Create obstacles (list of canvas rectangle IDs)
         self.obstacles = [
             # (x1, y1),(x2, y2)
@@ -384,16 +380,16 @@ class PacManApp(Frame):
             self.canvas.create_rectangle(130, 255, 180, 270, fill="black", outline="blue", width=5), # horizontal
             
             # Left Border Wall
-            self.canvas.create_rectangle(0, 0, 1, 450, fill="black", outline="black"), # verticle
+            self.canvas.create_rectangle(0, 0, 0, 450, fill="black", outline="black"), # verticle
             
             # Top Border Wall
-            self.canvas.create_rectangle(0, 0, 700, 1, fill="black", outline="black"), # horizontal
+            self.canvas.create_rectangle(0, 0, 700, 0, fill="black", outline="black"), # horizontal
             
             # Right Border Wall
-            self.canvas.create_rectangle(699, 0, 700, 450, fill="black", outline="black"), # verticle
+            self.canvas.create_rectangle(700, 0, 700, 450, fill="black", outline="black"), # verticle
             
             # Bottom Border Wall
-            self.canvas.create_rectangle(0, 449, 800, 450, fill="black", outline="black"), # horizontal
+            self.canvas.create_rectangle(0, 450, 800, 450, fill="black", outline="black"), # horizontal
             
         ]
 
@@ -412,10 +408,26 @@ class PacManApp(Frame):
 
         # Bind keys
         # Control up, down, left, right
-        self.window.bind("<Up>", lambda event: self.move(0, -15))  # Up
-        self.window.bind("<Left>", lambda event: self.move(-15, 0))  # Left
-        self.window.bind("<Right>", lambda event: self.move(15, 0))   # Right
-        self.window.bind("<Down>", lambda event: self.move(0, 15))   # Down
+        self.window.bind("2", lambda event: self.move(0, -15))  # Up
+        self.window.bind("4", lambda event: self.move(-15, 0))  # Left
+        self.window.bind("6", lambda event: self.move(15, 0))   # Right
+        self.window.bind("8", lambda event: self.move(0, 15))   # Down
+        
+        
+        def check_keypad(self):
+            keys = self.matrix_keypad.pressed_keys
+            if keys:
+                for key in keys:
+                    if key ==2:
+                        self.move(0,-10) #UP
+                    elif key ==8:
+                        self.move(0,10)  #DOWN 
+                    elif key == 4:
+                        self.move(-10,0) #LEFT
+                    elif key ==6:
+                        self.move(10,0)  #RIGHT
+            self.window.after(100,self.check_keypad)
+        
         
         # Start ghost movement
         self.chase_pacman()
@@ -448,15 +460,15 @@ class PacManApp(Frame):
          # Check win condition
         if not self.collectibles:
             self.game_running = False
-            self.canvas.create_text(350, 225, text="Winner!", fill="white", font=("Arial", 90))
-    
+            self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
+        
     # ghost chase
     def chase_pacman(self):
         if not self.game_running:
             return
         
         self.move_ghost_toward_pacman(self.ghost)
-        self.window.after(100, self.chase_pacman)
+        self.window.after(110, self.chase_pacman)
 
     # ghost2 chase
     def chase_pacman2(self):
@@ -470,7 +482,7 @@ class PacManApp(Frame):
             self.game_running = False
             self.canvas.create_text(350, 225, text="Game Over", fill="white", font=("Arial", 90))
 
-        self.window.after(90, self.chase_pacman2)
+        self.window.after(100, self.chase_pacman2)
 
     # Ghost movements
     def move_ghost_toward_pacman(self, ghost):
@@ -481,8 +493,6 @@ class PacManApp(Frame):
         ghost_y = (ghost_coords[1] + ghost_coords[3]) / 2
         pacman_x = (pacman_coords[0] + pacman_coords[2]) / 2
         pacman_y = (pacman_coords[1] + pacman_coords[3]) / 2
-        
-        move_options = []
 
         # Determines the ghosts movements
         if ghost == self.ghost:
@@ -577,7 +587,7 @@ button_input.pull = Pull.DOWN
 for pin in button_RGB:
     pin.direction = Direction.OUTPUT
     pin.value = True
-button = Button(gui, button_input, button_RGB)
+button = ogButton(gui, button_input, button_RGB)
 gui.setButton(button)
 
 # Toggle switches
