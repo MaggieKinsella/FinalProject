@@ -23,87 +23,69 @@ STAR_CLEARS_PASS = True
 class Lcd(Frame):
     def __init__(self, window):
         super().__init__(window, bg="black")
-        # make the GUI fullscreen
         window.after(500, window.attributes, '-fullscreen', 'True')
-        # a copy of the timer on the 7-segment display
         self._timer = None
-        # the pushbutton's state
         self._button = None
         self.pacman_app = None
-        #add boolean flags to check if phases are complete before moving on 
         self.wires_done = False
         self.toggles_done = False
         self.button_done = False
-        
-        # setup the GUI
         self.setup()
-        
-    # sets up the LCD "GUI"
+
     def setup(self):
-        # set column weights
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)
         self.pack(fill=BOTH, expand=True)
-        # the timer
+        
         self._ltimer = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Time left: ")
         self._ltimer.grid(row=0, column=0, columnspan=2, sticky=W)
-        # the keypad passphrase
+        
         self._lkeypad = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Combination: ")
         self._lkeypad.grid(row=1, column=0, columnspan=2, sticky=W)
-        # the jumper wires status
+
         self._lwires = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Wires: ")
         self._lwires.grid(row=2, column=0, columnspan=2, sticky=W)
-        # the pushbutton status
+
         self._lbutton = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Button: ")
         self._lbutton.grid(row=3, column=0, columnspan=2, sticky=W)
-        # the toggle switches status
+
         self._ltoggles = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Toggles: ")
         self._ltoggles.grid(row=4, column=0, columnspan=2, sticky=W)
-        
-        # the PacMan button (launches PacMan game)
-        self._lpacman = tkinter.Button(self, bg="green", fg="white", font=("Courier New", 24), text="Play Pac-Man", command=self.launch_pacman)
+
+        self._lpacman = tkinter.Button(self, bg="green", fg="white", font=("Courier New", 24),
+                                       text="Play Pac-Man", command=self.launch_pacman, state=DISABLED)
         self._lpacman.grid(row=6, column=0, columnspan=2, pady=20)
-        
-        # the pause button (pauses the timer)
+
         self._lpause = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Pause", command=self.pause)
         self._lpause.grid(row=5, column=0, sticky=W, padx=25, pady=40)
-        # the quit button
+
         self._lquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Quit", command=self.quit)
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
-        
-#     # checks if phases are complete before launching pacman window
-#     def check_all_phases_complete(self):
-#         if self.wires_done and self.toggles_done and self.button_done:
-#             print("All phases complete. Launching PacMan!")
-#             self.launch_pacman()
-#             
-#     def launch_pacman(self):
-#         if self.wires_done and self.toggles_done and self.button_done:
-#             if self.pacman_app is None:
-#                 self.pacman_app = PacManApp()
-#                 self.pacman_app.run()
 
-    # binds the 7-segment display component to the GUI
+    def check_all_phases_complete(self):
+        print("Phase completion status:", self.wires_done, self.toggles_done, self.button_done)
+        if self.wires_done and self.toggles_done and self.button_done:
+            print("All phases complete. Enabling Pac-Man button.")
+            self._lpacman.config(state=NORMAL)
+
+    def launch_pacman(self):
+        if self.pacman_app is None:
+            self.pacman_app = PacManApp(self.master)
+
     def setTimer(self, timer):
         self._timer = timer
 
-    # binds the pushbutton component to the GUI
     def setButton(self, button):
         self._button = button
 
-    # pauses the timer
     def pause(self):
         self._timer.pause()
 
-    # quits the GUI, resetting some components
     def quit(self):
-        # turn off the 7-segment display
         self._timer._display.blink_rate = 0
         self._timer._display.fill(0)
-        # turn off the pushbutton's LED
         for pin in self._button._rgb:
             pin.value = True
-        # close the GUI
         exit(0)
 
 # template (superclass) for various bomb components/phases
@@ -323,78 +305,6 @@ class Toggles(PhaseThread):
 
     def reset(self):
         self._running = False
-
-######
-# MAIN
-
-# configure and initialize the LCD GUI
-WIDTH = 800
-HEIGHT = 600
-window = Tk()
-gui = Lcd(window)
-
-# configure and initialize the phases/components
-
-# 7 segment display
-# 4 pins: 5V(+), GND(-), SDA, SCL
-#         ----------7SEG---------
-i2c = board.I2C()
-display = Seg7x4(i2c)
-display.brightness = 0.5
-timer = Timer(COUNTDOWN, display)
-# bind the 7-segment display to the LCD GUI
-gui.setTimer(timer)
-
-# keypad
-# 8 pins: 10, 9, 11, 5, 6, 13, 19, NA
-#         -----------KEYPAD----------
-keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
-keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
-keypad_keys = ((1, 2, 3), (4, 5, 6), (7, 8, 9), ("*", 0, "#"))
-matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
-keypad = Keypad(matrix_keypad)
-
-# jumper wires
-# 10 pins: 14, 15, 18, 23, 24, 3V3, 3V3, 3V3, 3V3, 3V3
-#          -------JUMP1------  ---------JUMP2---------
-wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
-for pin in wire_pins:
-    pin.direction = Direction.INPUT
-    pin.pull = Pull.DOWN
-wires = Wires(gui, wire_pins)
-
-# pushbutton
-# 6 pins: 4, 17, 27, 22, 3V3, 3V3
-#         -BUT1- -BUT2-  --BUT3--
-button_input = DigitalInOut(board.D4)
-button_RGB = [DigitalInOut(i) for i in (board.D17, board.D27, board.D22)]
-button_input.direction = Direction.INPUT
-button_input.pull = Pull.DOWN
-for pin in button_RGB:
-    pin.direction = Direction.OUTPUT
-    pin.value = True
-button = Button(button_input, button_RGB)
-# bind the pushbutton to the LCD GUI
-gui.setButton(gui, button_input, button_RGB)
-
-# toggle switches
-# 3x3 pins: 12, 16, 20, 21, 3V3, 3V3, 3V3, 3V3, GND, GND, GND, GND
-#           -TOG1-  -TOG2-  --TOG3--  --TOG4--  --TOG5--  --TOG6--
-toggle_pins = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
-for pin in toggle_pins:
-    pin.direction = Direction.INPUT
-    pin.pull = Pull.DOWN
-toggles = Toggles(gui, toggle_pins)
-
-# start threads
-timer.start()
-keypad.start()
-wires.start()
-button.start()
-toggles.start()
-
-# start main GUI loop
-window.mainloop()
 
 class PacManApp(Frame):
     def __init__(self, window):
@@ -630,9 +540,59 @@ class PacManApp(Frame):
         x1, y1, x2, y2 = coords1
         a1, b1, a2, b2 = coords2
         return not (x2 < a1 or x1 > a2 or y2 < b1 or y1 > b2)
-    
 
-# Run GUI
+######
+# MAIN
+WIDTH = 800
+HEIGHT = 600
 window = Tk()
-app = PacManApp(window)
+gui = Lcd(window)
+
+# 7-segment timer
+i2c = board.I2C()
+display = Seg7x4(i2c)
+display.brightness = 0.5
+timer = Timer(COUNTDOWN, display)
+gui.setTimer(timer)
+
+# Keypad
+keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
+keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
+keypad_keys = ((1, 2, 3), (4, 5, 6), (7, 8, 9), ("*", 0, "#"))
+matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
+keypad = Keypad(matrix_keypad)
+
+# Jumper wires
+wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
+for pin in wire_pins:
+    pin.direction = Direction.INPUT
+    pin.pull = Pull.DOWN
+wires = Wires(gui, wire_pins)
+
+# Pushbutton
+button_input = DigitalInOut(board.D4)
+button_RGB = [DigitalInOut(i) for i in (board.D17, board.D27, board.D22)]
+button_input.direction = Direction.INPUT
+button_input.pull = Pull.DOWN
+for pin in button_RGB:
+    pin.direction = Direction.OUTPUT
+    pin.value = True
+button = Button(gui, button_input, button_RGB)
+gui.setButton(button)
+
+# Toggle switches
+toggle_pins = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
+for pin in toggle_pins:
+    pin.direction = Direction.INPUT
+    pin.pull = Pull.DOWN
+toggles = Toggles(gui, toggle_pins)
+
+# Start all phase threads
+timer.start()
+keypad.start()
+wires.start()
+button.start()
+toggles.start()
+
+# Start main GUI loop
 window.mainloop()
