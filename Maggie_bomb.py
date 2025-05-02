@@ -300,13 +300,6 @@ class Toggles(PhaseThread):
         
 from tkinter import *
 
-# pacman sounds
-pygame.mixer.init()
-pygame.mixer.music.load('pacman_siren.mp3')
-pygame.mixer.music.play()
-
-def play_sound_eat():
-    pygame.mixer.music.play('pacman_eating.mp3')
 
 class PacManApp(Frame):
     def __init__(self, window):
@@ -459,7 +452,6 @@ class PacManApp(Frame):
         # Check for collectible collisions
         for collectible in self.collectibles[:]:  # Copy to avoid modifying while iterating
             if self.is_collision(new_coords, self.canvas.coords(collectible)):
-                play_sound_eat()
                 self.canvas.delete(collectible)
                 self.collectibles.remove(collectible)
         
