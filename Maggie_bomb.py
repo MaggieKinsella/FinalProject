@@ -196,7 +196,7 @@ class Wires(PhaseThread):
         while (True):
             #Read each wire and build a binary string
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd.after(0, self._lwires.config, {text=f"Wires: {self._value}"})
+            self.lcd.after(0, lambda: self.lcd._lwires.config(text=f"Wires: {self._value}"))
             
             if self._value == self.correct_value:
                 print("Correct wire order! Phase complete.")
@@ -280,7 +280,7 @@ class Toggles(PhaseThread):
         while (True):
             # get the toggle switch values (0->False, 1->True)
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd.after(0, self.lcd._ltoggles.config, {text=f"Toggles: {self._value}"})
+            self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
             
             if self._value == self.correct_value:
                 print("Toggles Correct!")
