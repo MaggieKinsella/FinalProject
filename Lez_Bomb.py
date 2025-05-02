@@ -338,6 +338,9 @@ class PacManApp(Frame):
         if not self.collectibles:
             self.game_running = False
             self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
+         # ─── STOP THE TIMER ─────────────────────────
+            import __main__
+            __main__.timer.pause()
 
     def check_keypad(self):
         keys = self.matrix_keypad.pressed_keys
