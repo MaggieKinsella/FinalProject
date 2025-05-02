@@ -8,14 +8,13 @@ from adafruit_ht16k33.segments import Seg7x4
 from digitalio import DigitalInOut, Direction, Pull
 from adafruit_matrixkeypad import Matrix_Keypad
 import pygame
-# from bomb_GUI_PacMan import PacManApp  # Import your PacManApp here
 
 # constants
 COUNTDOWN = 300
 MAX_PASS_LEN = 11
 STAR_CLEARS_PASS = True
 
-# the LCD display "GUI"
+# ─── LCD / Main GUI ─────────────────────────────────────────────────────────────
 class Lcd(Frame):
     def __init__(self, window):
         super().__init__(window, bg="black")
@@ -52,10 +51,12 @@ class Lcd(Frame):
                                        text="Play Pac-Man", state=DISABLED, command=self.launch_pacman)
         self._lpacman.grid(row=6, column=0, columnspan=2, pady=20)
 
-        self._lpause = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Pause", command=self.pause)
+        self._lpause = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24),
+                                      text="Pause", command=self.pause)
         self._lpause.grid(row=5, column=0, sticky=W, padx=25, pady=40)
 
-        self._lquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24), text="Quit", command=self.quit)
+        self._lquit = tkinter.Button(self, bg="red", fg="white", font=("Courier New", 24),
+                                     text="Quit", command=self.quit)
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
 
     def check_all_phases_complete(self):
@@ -86,7 +87,7 @@ class Lcd(Frame):
             pin.value = True
         exit(0)
 
-# base class for phases
+# ─── PhaseThread Base ────────────────────────────────────────────────────────────
 class PhaseThread(Thread):
     def __init__(self, name):
         super().__init__(name=name, daemon=True)
@@ -96,6 +97,7 @@ class PhaseThread(Thread):
     def reset(self):
         self._value = None
 
+# ─── Timer Phase ─────────────────────────────────────────────────────────────────
 class Timer(PhaseThread):
     def __init__(self, value, display, name="Timer"):
         super().__init__(name)
@@ -128,6 +130,7 @@ class Timer(PhaseThread):
     def __str__(self):
         return f"{self._min}:{self._sec}"
 
+# ─── Keypad Phase ────────────────────────────────────────────────────────────────
 class Keypad(PhaseThread):
     def __init__(self, lcd, keypad, name="Keypad"):
         super().__init__(name)
@@ -154,6 +157,7 @@ class Keypad(PhaseThread):
     def __str__(self):
         return self._value
 
+# ─── Wires Phase ─────────────────────────────────────────────────────────────────
 class Wires(PhaseThread):
     def __init__(self, lcd, pins, name="Wires"):
         super().__init__(name)
@@ -179,6 +183,7 @@ class Wires(PhaseThread):
     def reset(self):
         self._running = False
 
+# ─── Button Phase ────────────────────────────────────────────────────────────────
 class ogButton(PhaseThread):
     colors = ["R", "G", "B"]
 
@@ -193,33 +198,28 @@ class ogButton(PhaseThread):
         self._running = True
         rgb_index = 0
         rgb_counter = 0
-
         while True:
             self._rgb[0].value = (ogButton.colors[rgb_index] != "R")
             self._rgb[1].value = (ogButton.colors[rgb_index] != "G")
             self._rgb[2].value = (ogButton.colors[rgb_index] != "B")
-
             self._value = self._state.value
             if self._value and ogButton.colors[rgb_index] == "R":
                 self.lcd.button_done = True
                 self.lcd._lbutton.config(text="Button Complete!")
                 self.lcd.check_all_phases_complete()
                 break
-
             blink_threshold = 5 if (self.lcd.wires_done and self.lcd.toggles_done) else 10
-
             rgb_counter += 1
             if rgb_counter >= blink_threshold:
                 rgb_index = (rgb_index + 1) % len(ogButton.colors)
                 rgb_counter = 0
-
             sleep(0.1)
-
         self._running = False
 
     def __str__(self):
         return "Pressed" if self._value else "Released"
 
+# ─── Toggles Phase ───────────────────────────────────────────────────────────────
 class Toggles(PhaseThread):
     def __init__(self, lcd, pins, name="Toggles"):
         super().__init__(name)
@@ -248,6 +248,7 @@ class Toggles(PhaseThread):
     def reset(self):
         self._running = False
 
+# ─── PacMan Game ─────────────────────────────────────────────────────────────────
 class PacManApp(Frame):
     def __init__(self, window):
         super().__init__(window)
@@ -255,35 +256,67 @@ class PacManApp(Frame):
         self.window.title("PacMan")
         self.pack()
 
+        # canvas
         self.canvas = Canvas(window, width=800, height=480, bg="black")
         self.canvas.pack()
 
-        # Create Pac-Man
-        self.pacman = self.canvas.create_arc(100, 320, 140, 360, start=45, extent=270, fill="yellow", outline="orange")
-        # Create ghosts
-        self.ghost = self.canvas.create_oval(600, 410, 630, 440, fill="red", outline="pink")
-        self.ghost2 = self.canvas.create_oval(10, 10, 40, 40, fill="cyan")
-
+        # Pac-Man & ghosts
+        self.pacman = self.canvas.create_arc(100, 320, 140, 360,
+                                             start=45, extent=270,
+                                             fill="yellow", outline="orange")
+        self.ghost  = self.canvas.create_oval(600, 410, 630, 440, fill="red",  outline="pink")
+        self.ghost2 = self.canvas.create_oval( 10,  10,  40,  40, fill="cyan", outline="cyan")
         self.game_running = True
 
-        # Obstacles and collectibles setup...
+        # Obstacles
         self.obstacles = [
-            self.canvas.create_rectangle(60, 60, 120, 75, fill="black", outline="blue", width=5),
-            # ... (other obstacles as before) ...
-            self.canvas.create_rectangle(0, 450, 800, 450, fill="black", outline="black"),
-        ]
-        self.collectibles = [
-            self.canvas.create_oval(25, 70, 35, 80, fill="pink", outline="pink"),
-            # ... (other collectibles as before) ...
+            self.canvas.create_rectangle(60,  60, 120,  75, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(60,  60,  75, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(60, 375, 120, 390, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(60, 375,  75, 255, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(180,   0, 195,  75, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(180, 375, 195, 450, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(265,  60, 435,  75, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(265, 375, 435, 390, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(505,   0, 520,  75, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(505, 375, 520, 450, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(625,  60, 580,  75, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(625,  60, 640, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(640, 390, 580, 375, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(640, 390, 625, 255, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(505, 165, 570, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(505, 255, 570, 270, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(265, 165, 305, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(265, 165, 280, 270, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(280, 255, 435, 270, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(420, 180, 435, 270, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(395, 165, 435, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(130, 165, 180, 180, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(130, 255, 180, 270, fill="black", outline="blue", width=5),
+            self.canvas.create_rectangle(  0,   0,   0, 450, fill="black", outline="black"),
+            self.canvas.create_rectangle(  0,   0, 700,   0, fill="black", outline="black"),
+            self.canvas.create_rectangle(700,   0, 700, 450, fill="black", outline="black"),
+            self.canvas.create_rectangle(  0, 450, 800, 450, fill="black", outline="black"),
         ]
 
-        # Hook into the existing hardware keypad:
+        # Collectibles
+        self.collectibles = [
+            self.canvas.create_oval( 25,  70,  35,  80, fill="pink", outline="pink"),
+            self.canvas.create_oval(150, 210, 160, 220, fill="pink", outline="pink"),
+            self.canvas.create_oval(350,  30, 360,  40, fill="pink", outline="pink"),
+            self.canvas.create_oval(315, 322, 325, 332, fill="pink", outline="pink"),
+            self.canvas.create_oval(600, 420, 610, 430, fill="pink", outline="pink"),
+            self.canvas.create_oval(590, 100, 600, 110, fill="pink", outline="pink"),
+            self.canvas.create_oval(370, 215, 380, 225, fill="pink", outline="pink"),
+            self.canvas.create_oval( 70, 415,  80, 425, fill="pink", outline="pink"),
+        ]
+
+        # keypad polling
         import __main__
         self.matrix_keypad = __main__.matrix_keypad
-        # start polling
         self.window.after(100, self.check_keypad)
 
-        # Start ghost movement loops
+        # start ghosts
         self.chase_pacman()
         self.chase_pacman2()
 
@@ -294,16 +327,14 @@ class PacManApp(Frame):
             return
         coords = self.canvas.coords(self.pacman)
         new_coords = [coords[0]+dx, coords[1]+dy, coords[2]+dx, coords[3]+dy]
-        # collision with walls
-        for obstacle in self.obstacles:
-            if self.is_collision(new_coords, self.canvas.coords(obstacle)):
+        for obs in self.obstacles:
+            if self.is_collision(new_coords, self.canvas.coords(obs)):
                 return
         self.canvas.move(self.pacman, dx, dy)
-        # check collectibles
-        for collectible in self.collectibles[:]:
-            if self.is_collision(new_coords, self.canvas.coords(collectible)):
-                self.canvas.delete(collectible)
-                self.collectibles.remove(collectible)
+        for col in self.collectibles[:]:
+            if self.is_collision(new_coords, self.canvas.coords(col)):
+                self.canvas.delete(col)
+                self.collectibles.remove(col)
         if not self.collectibles:
             self.game_running = False
             self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
@@ -312,25 +343,19 @@ class PacManApp(Frame):
         keys = self.matrix_keypad.pressed_keys
         if keys:
             for key in keys:
-                if key == 2:      # up
-                    self.move(0, -15)
-                elif key == 8:    # down
-                    self.move(0, 15)
-                elif key == 4:    # left
-                    self.move(-15, 0)
-                elif key == 6:    # right
-                    self.move(15, 0)
+                if   key == 2: self.move(0, -15)
+                elif key == 8: self.move(0,  15)
+                elif key == 4: self.move(-15, 0)
+                elif key == 6: self.move(15,  0)
         self.window.after(100, self.check_keypad)
 
     def chase_pacman(self):
-        if not self.game_running:
-            return
+        if not self.game_running: return
         self.move_ghost_toward_pacman(self.ghost)
         self.window.after(110, self.chase_pacman)
 
     def chase_pacman2(self):
-        if not self.game_running:
-            return
+        if not self.game_running: return
         self.move_ghost_toward_pacman(self.ghost2)
         if self.is_collision(self.canvas.coords(self.ghost2), self.canvas.coords(self.pacman)):
             self.game_running = False
@@ -338,38 +363,33 @@ class PacManApp(Frame):
         self.window.after(100, self.chase_pacman2)
 
     def move_ghost_toward_pacman(self, ghost):
-        ghost_coords = self.canvas.coords(ghost)
-        pacman_coords = self.canvas.coords(self.pacman)
-        ghost_x = (ghost_coords[0] + ghost_coords[2]) / 2
-        ghost_y = (ghost_coords[1] + ghost_coords[3]) / 2
-        pacman_x = (pacman_coords[0] + pacman_coords[2]) / 2
-        pacman_y = (pacman_coords[1] + pacman_coords[3]) / 2
+        g = self.canvas.coords(ghost)
+        p = self.canvas.coords(self.pacman)
+        gx, gy = (g[0]+g[2])/2, (g[1]+g[3])/2
+        px, py = (p[0]+p[2])/2, (p[1]+p[3])/2
 
-        if ghost == self.ghost:
-            moves = []
-            if ghost_x < pacman_x: moves.append((5, 0))
-            elif ghost_x > pacman_x: moves.append((-5, 0))
-            if ghost_y < pacman_y: moves.append((0, 5))
-            elif ghost_y > pacman_y: moves.append((0, -5))
+        opts = []
+        if ghost is self.ghost:
+            if gx < px: opts.append((5,0))
+            elif gx > px: opts.append((-5,0))
+            if gy < py: opts.append((0,5))
+            elif gy > py: opts.append((0,-5))
         else:
-            moves = []
-            if ghost_y < pacman_y: moves.append((0, 5))
-            elif ghost_y > pacman_y: moves.append((0, -5))
-            if ghost_x < pacman_x: moves.append((5, 0))
-            elif ghost_x > pacman_x: moves.append((-5, 0))
+            if gy < py: opts.append((0,5))
+            elif gy > py: opts.append((0,-5))
+            if gx < px: opts.append((5,0))
+            elif gx > px: opts.append((-5,0))
 
-        for dx, dy in moves:
-            new_coords = [ghost_coords[0]+dx, ghost_coords[1]+dy,
-                          ghost_coords[2]+dx, ghost_coords[3]+dy]
-            collision = any(self.is_collision(new_coords, self.canvas.coords(o)) for o in self.obstacles)
-            if ghost == self.ghost2 and not collision:
-                if self.is_collision(new_coords, self.canvas.coords(self.ghost)):
-                    collision = True
-            if not collision:
-                self.canvas.move(ghost, dx, dy)
-                break
+        for dx, dy in opts:
+            new = [g[0]+dx, g[1]+dy, g[2]+dx, g[3]+dy]
+            if any(self.is_collision(new, self.canvas.coords(o)) for o in self.obstacles):
+                continue
+            if ghost is self.ghost2 and self.is_collision(new, self.canvas.coords(self.ghost)):
+                continue
+            self.canvas.move(ghost, dx, dy)
+            break
 
-        if self.is_collision(self.canvas.coords(ghost), pacman_coords):
+        if self.is_collision(self.canvas.coords(ghost), p):
             self.game_running = False
             self.canvas.create_text(350, 225, text="Game Over", fill="white", font=("Arial", 90))
 
@@ -378,38 +398,38 @@ class PacManApp(Frame):
         a1, b1, a2, b2 = c2
         return not (x2 < a1 or x1 > a2 or y2 < b1 or y1 > b2)
 
-
-# ─── MAIN ─────────────────────────────────────────────────────────────────────
+# ─── MAIN ────────────────────────────────────────────────────────────────────────
 WIDTH = 800
 HEIGHT = 600
+
 window = Tk()
 gui = Lcd(window)
 
-# 7-segment timer
+# Timer setup
 i2c = board.I2C()
 display = Seg7x4(i2c)
 display.brightness = 0.5
 timer = Timer(COUNTDOWN, display)
 gui.setTimer(timer)
 
-# Keypad
+# Keypad setup
 keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
 keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
 for pin in keypad_cols + keypad_rows:
     pin.direction = Direction.INPUT
     pin.pull = Pull.DOWN
-keypad_keys = ((1, 2, 3), (4, 5, 6), (7, 8, 9), ("*", 0, "#"))
+keypad_keys = ((1,2,3), (4,5,6), (7,8,9), ("*",0,"#"))
 matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
 keypad = Keypad(gui, matrix_keypad)
 
-# Wires
+# Wires setup
 wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
 for pin in wire_pins:
     pin.direction = Direction.INPUT
     pin.pull = Pull.DOWN
 wires = Wires(gui, wire_pins)
 
-# Button
+# Button setup
 button_input = DigitalInOut(board.D4)
 button_input.direction = Direction.INPUT
 button_input.pull = Pull.DOWN
@@ -420,14 +440,14 @@ for pin in button_RGB:
 button = ogButton(gui, button_input, button_RGB)
 gui.setButton(button)
 
-# Toggles
+# Toggles setup
 toggle_pins = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
 for pin in toggle_pins:
     pin.direction = Direction.INPUT
     pin.pull = Pull.DOWN
 toggles = Toggles(gui, toggle_pins)
 
-# start phases
+# Start phase threads
 timer.start()
 keypad.start()
 wires.start()
