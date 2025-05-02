@@ -68,11 +68,11 @@ class Lcd(Frame):
 
     def launch_pacman(self):
         if self.pacman_app is None:
-            self.master.destroy()
-            new_window = Toplevel(self.master)
+            self.master.withdraw()
+            new_window = Toplevel()
             new_window.attributes('fullscreen', True)
             self.pacman_app = PacManApp(new_window)
-            new_window.mainloop()
+#            new_window.mainloop()
 
     def setTimer(self, timer):
         self._timer = timer
@@ -188,21 +188,15 @@ class Wires(PhaseThread):
         self.lcd = lcd
         self.correct_value = "11010" #set the correct wire order
         self._pins = pins
-#             Pin(14, Pin.IN), #Red wire
-#             Pin(15, Pin.IN), #Orange wire
-#             Pin(18, Pin.IN), #Yellow wire
-#             Pin(23, Pin.IN), #White wire
-#             Pin(24, Pin.IN), #Black wire
-#         ]
         self._value = ""
-        self._running = False # True
+        self._running = False
 
     def run(self):
         self._running = True
         while (True):
             #Read each wire and build a binary string
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd._lwires.config(text=f"Wires: {self._value}")
+            self.lcd.after(0, self._lwires.config, {text=f"Wires: {self._value}"})
             
             if self._value == self.correct_value:
                 print("Correct wire order! Phase complete.")
@@ -210,9 +204,6 @@ class Wires(PhaseThread):
                 self.lcd._lwires.config(text="Wires Complete")
                 self.lcd.check_all_phases_complete()
                 self._running = False
-#            #Show success message on the LCD
-#            self.lcd.clear()
-#            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
         
             sleep(0.1)
 
@@ -282,7 +273,7 @@ class Toggles(PhaseThread):
         while (True):
             # get the toggle switch values (0->False, 1->True)
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd._ltoggles.config(text=f"Toggles: {self._value}")
+            self.lcd.after(0, self.lcd._ltoggles.config, {text=f"Toggles: {self._value}"})
             
             if self._value == self.correct_value:
                 print("Toggles Correct!")
@@ -568,7 +559,7 @@ keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
 keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
 keypad_keys = ((1, 2, 3), (4, 5, 6), (7, 8, 9), ("*", 0, "#"))
 matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
-keypad = Keypad(matrix_keypad)
+keypad = Keypad(gui, matrix_keypad)
 
 # Jumper wires
 wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
