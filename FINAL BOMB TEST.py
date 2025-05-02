@@ -5,9 +5,9 @@ from time import sleep
 from random import randint
 import board
 from adafruit_ht16k33.segments import Seg7x4
-from digitalio import DigitalInOut, Direction, Pull
+from digtalio import DigitalInOut, Direction, Pull
 from adafruit_matrixkeypad import Matrix_Keypad
-from bomb_GUI_PacMan import PacManApp  # Import your PacManApp here
+from bomb_GUI_PacMan import PacManApp # Import the PacManApp here
 
 # constants
 # the bomb's initial countdown timer value (seconds)
