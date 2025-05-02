@@ -1,4 +1,4 @@
-help me fix the keypad phase so that 2 is up, 4 is left, 6 is right and 8 is down for the pacman game for pacman to move:
+
 from tkinter import \*
 import tkinter
 from threading import Thread
@@ -39,7 +39,7 @@ self.toggles\_done = False
 self.button\_done = False
 self.setup()
 
-```
+
 def setup(self):
     self.columnconfigure(0, weight=1)
     self.columnconfigure(1, weight=2)
