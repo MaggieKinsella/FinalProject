@@ -226,39 +226,45 @@ class ogButton(PhaseThread):
         super().__init__(name)
         self.lcd = lcd
         self._value = False
-        # the pushbutton's state pin
         self._state = state
-        # the pushbutton's LED pins
         self._rgb = rgb
 
-    # runs the thread
     def run(self):
         self._running = True
-        # initialize and index and counter to help iterate through the RGB colors
         rgb_index = 0
         rgb_counter = 0
-        while (True):
-            # set the LED to the current color
-            self._rgb[0].value = False if ogButton.colors[rgb_index] == "R" else True
-            self._rgb[1].value = False if ogButton.colors[rgb_index] == "G" else True
-            self._rgb[2].value = False if ogButton.colors[rgb_index] == "B" else True
-           
-            # get the pushbutton's state
+
+        while True:
+            # 1) Set the LED pins according to current color
+            self._rgb[0].value = (ogButton.colors[rgb_index] != "R")
+            self._rgb[1].value = (ogButton.colors[rgb_index] != "G")
+            self._rgb[2].value = (ogButton.colors[rgb_index] != "B")
+
+            # 2) Check for a valid press *and* correct timing (only completes on red)
             self._value = self._state.value
-            if self._value:
-                print("Button pressed")
+            if self._value and ogButton.colors[rgb_index] == "R":
+                print("Button pressed while red — Phase complete")
                 self.lcd.button_done = True
                 self.lcd._lbutton.config(text="Button Complete!")
                 self.lcd.check_all_phases_complete()
-                self._running = False
-            # increment the RGB counter
+                break
+
+            # 3) Determine blink speed:
+            #    - before wires+toggles: 1s per color (threshold=10 loops @0.1s)
+            #    - after wires+toggles: 0.5s per color    (threshold=5 loops @0.1s)
+            if self.lcd.wires_done and self.lcd.toggles_done:
+                blink_threshold = 5
+            else:
+                blink_threshold = 10
+
+            # 4) Advance the color when we've hit the threshold
             rgb_counter += 1
-            # switch to the next RGB color every 1s (10 * 0.1s = 1s)
-            if (rgb_counter == 10):
+            if rgb_counter >= blink_threshold:
                 rgb_index = (rgb_index + 1) % len(ogButton.colors)
                 rgb_counter = 0
+
             sleep(0.1)
-           
+
         self._running = False
 
     def __str__(self):
