@@ -1,3 +1,7 @@
+Thought for a couple of seconds
+
+
+```python
 from tkinter import *
 import tkinter
 from threading import Thread
@@ -338,6 +342,9 @@ class PacManApp(Frame):
         if not self.collectibles:
             self.game_running = False
             self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
+            # ─── STOP THE BOMB TIMER ───────────────────────────
+            import __main__
+            __main__.timer.pause()
 
     def check_keypad(self):
         keys = self.matrix_keypad.pressed_keys
@@ -399,11 +406,8 @@ class PacManApp(Frame):
         return not (x2 < a1 or x1 > a2 or y2 < b1 or y1 > b2)
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────────
-WIDTH = 800
-HEIGHT = 600
-
-window = Tk()
-gui = Lcd(window)
+WINDOW = Tk()
+gui = Lcd(WINDOW)
 
 # Timer setup
 i2c = board.I2C()
@@ -454,4 +458,5 @@ wires.start()
 button.start()
 toggles.start()
 
-window.mainloop()
+WINDOW.mainloop()
+```
