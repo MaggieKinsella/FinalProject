@@ -233,7 +233,7 @@ class Wires:
 #            self.lcd.putsrt("Wires Correct!\nSUCCESS!")
             
             #Stop checking wires
-                self.running = False 
+                self.running = False
         
             sleep(0.1)
 
