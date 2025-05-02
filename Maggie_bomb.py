@@ -7,6 +7,7 @@ import board
 from adafruit_ht16k33.segments import Seg7x4
 from digitalio import DigitalInOut, Direction, Pull
 from adafruit_matrixkeypad import Matrix_Keypad
+import pygame
 # from bomb_GUI_PacMan import PacManApp  # Import your PacManApp here
 
 # constants
@@ -298,6 +299,11 @@ class Toggles(PhaseThread):
         self._running = False
         
 from tkinter import *
+
+# pacman sounds
+pygame.mixer.init()
+pygame.mixer.music.load('pacman_eating.mp3')
+pygame.mixer.music.play()
 
 class PacManApp(Frame):
     def __init__(self, window):
