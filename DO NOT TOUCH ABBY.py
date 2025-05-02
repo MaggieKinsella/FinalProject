@@ -1,7 +1,3 @@
-Thought for a couple of seconds
-
-
-```python
 from tkinter import *
 import tkinter
 from threading import Thread
@@ -459,4 +455,3 @@ button.start()
 toggles.start()
 
 WINDOW.mainloop()
-```
