@@ -254,7 +254,7 @@ class ogButton(PhaseThread):
             #    - before wires+toggles: 1s per color (threshold=10 loops @0.1s)
             #    - after wires+toggles: 0.5s per color    (threshold=5 loops @0.1s)
             if self.lcd.wires_done and self.lcd.toggles_done:
-                blink_threshold = 5
+                blink_threshold = 3
             else:
                 blink_threshold = 10
 
