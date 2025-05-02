@@ -47,3 +47,55 @@ root.after(15000, intro_phase1)
 
 # Run the GUI
 root.mainloop()
+
+import tkinter as tk
+
+def show_intro_screen(callback_on_finish):
+    intro_root = tk.Tk()
+    intro_root.title("Intro")
+    intro_root.configure(bg="black")
+    intro_root.attributes('-fullscreen', True)
+
+    text_display = tk.Text(intro_root, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
+    text_display.pack(expand=True, fill='both', padx=10, pady=10)
+
+    def typewriter(text, delay=100, linebreak=True, on_done=None):
+        def inner(i=0):
+            if i < len(text):
+                text_display.configure(state='normal')
+                text_display.insert(tk.END, text[i])
+                text_display.configure(state='disabled')
+                text_display.see(tk.END)
+                intro_root.after(delay, inner, i+1)
+            elif linebreak:
+                text_display.configure(state='normal')
+                text_display.insert(tk.END, "\n")
+                text_display.configure(state='disabled')
+                text_display.see(tk.END)
+                if on_done:
+                    on_done()
+        inner()
+
+    def start_phase_1():
+        text_display.configure(state='normal')
+        text_display.delete('1.0', tk.END)
+        text_display.configure(state='disabled')
+        typewriter("PHASE 1", delay=100)
+        intro_root.after(2000, lambda: typewriter(
+            "OBJECTIVE: Eat all the Pac-Dots scattered throughout the maze to complete the level. "
+            "Avoid the ghosts — contact with a ghost results in losing a life.",
+            delay=60,
+            on_done=end_intro))
+
+    def end_intro():
+        intro_root.destroy()
+        callback_on_finish()
+
+    # Intro sequence
+    typewriter("DEFUSE THE BOMB", delay=100)
+    intro_root.after(2500, lambda: typewriter(
+        "OBJECTIVE: COMPLETE ALL 4 PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...",
+        delay=80,
+        on_done=start_phase_1))
+
+    intro_root.mainloop()
