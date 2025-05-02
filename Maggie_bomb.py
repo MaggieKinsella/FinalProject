@@ -63,16 +63,16 @@ class Lcd(Frame):
     def check_all_phases_complete(self):
 #         print("Phase completion status:", self.wires_done, self.toggles_done, self.button_done)
         if self.wires_done and self.toggles_done and self.button_done:
-            print("All phases complete. Enabling Pac-Man button.")
+#            print("All phases complete. Enabling Pac-Man button.")
             self._lpacman.config(state=NORMAL)
 
     def launch_pacman(self):
         if self.pacman_app is None:
             self.master.withdraw()
-            new_window = Toplevel()
-            new_window.attributes('fullscreen', True)
-            self.pacman_app = PacManApp(new_window)
-#            new_window.mainloop()
+            window = Tk()
+            window.attributes('-fullscreen', True)
+            self.pacman_app = PacManApp(window)
+            window.mainloop()
 
     def setTimer(self, timer):
         self._timer = timer
@@ -235,7 +235,7 @@ class ogButton(PhaseThread):
             # 2) Check for a valid press *and* correct timing (only completes on red)
             self._value = self._state.value
             if self._value and ogButton.colors[rgb_index] == "R":
-                print("Button pressed while red — Phase complete")
+#                print("Button pressed while red — Phase complete")
                 self.lcd.button_done = True
                 self.lcd._lbutton.config(text="Button Complete!")
                 self.lcd.check_all_phases_complete()
@@ -283,7 +283,7 @@ class Toggles(PhaseThread):
             self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
             
             if self._value == self.correct_value:
-                print("Toggles Correct!")
+#                print("Toggles Correct!")
                 self.lcd.toggles_done = True
                 self.lcd._ltoggles.config(text="Toggles Complete!")
                 self.lcd.check_all_phases_complete()
