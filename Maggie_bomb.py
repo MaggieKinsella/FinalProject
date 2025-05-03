@@ -32,11 +32,14 @@ class Lcd(Frame):
         self.columnconfigure(1, weight=2)
         self.pack(fill=BOTH, expand=True)
 
-        self._ltimer = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Time left: ")
-        self._ltimer.grid(row=0, column=0, columnspan=2, sticky=W)
+        #self._ltimer = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Time left: ")
+        #self._ltimer.grid(row=0, column=0, columnspan=2, sticky=W)
 
-        self._lkeypad = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Combination: ")
-        self._lkeypad.grid(row=1, column=0, columnspan=2, sticky=W)
+        #self._lkeypad = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Combination: ")
+        #self._lkeypad.grid(row=1, column=0, columnspan=2, sticky=W)
+
+        self._lphases = Label(self, bg="black", gf="white", font=("Courier New", 24), text="Phases Complete: 0/3")
+        self._lphases.grid(row=0, column=0, columnspan=2, sticky=W)
 
         self._lwires = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Wires: ")
         self._lwires.grid(row=2, column=0, columnspan=2, sticky=W)
@@ -60,6 +63,8 @@ class Lcd(Frame):
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
 
     def check_all_phases_complete(self):
+        count = sum([self.wires_done, self.toggles_done, self.button_done])
+        self._lphases.config(text=f"Phases Complete: {count}/3")
         if self.wires_done and self.toggles_done and self.button_done:
             self._lpacman.config(state=NORMAL)
 
@@ -520,7 +525,7 @@ def intro_phase1():
     typewriter("PHASE 1-3", delay=100)
     root.after(1000, lambda: typewriter(
         "OBJECTIVE: Disable the toggles, wires, and button",
-        delay=60))
+        delay=80))
 
 def intro_phase2():
     text_display.config(state='normal')
@@ -528,7 +533,7 @@ def intro_phase2():
     text_display.config(state='disabled')
     typewriter("PHASE 4", delay=100)
     root.after(2000, lambda: typewriter(
-        "OBJECTIVE: Once you have disabled all previous phases move on to the final phase, Pac-Man.\n"
+        "OBJECTIVE: All systems disabled. Move on to the final phase, Pac-Man.\n"
         "Eat all the Pac-Dots scattered throughout the maze to win!\n"
         "To move use keys 2-up, 4-left, 6-right, and 8-down on keypad.\n"
         "Make sure to avoid the ghosts...",
