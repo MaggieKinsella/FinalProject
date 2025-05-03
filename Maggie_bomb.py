@@ -38,7 +38,7 @@ class Lcd(Frame):
         #self._lkeypad = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Combination: ")
         #self._lkeypad.grid(row=1, column=0, columnspan=2, sticky=W)
 
-        self._lphases = Label(self, bg="black", gf="white", font=("Courier New", 24), text="Phases Complete: 0/3")
+        self._lphases = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Phases Complete: 0/3")
         self._lphases.grid(row=0, column=0, columnspan=2, sticky=W)
 
         self._lwires = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Wires: ")
@@ -551,6 +551,3 @@ root.after(30000, intro_phase2)
 root.after(58000, switch_to_main_gui)
 
 root.mainloop()
-
-if __name__=="__main__":
-    main()
