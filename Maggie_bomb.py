@@ -61,51 +61,51 @@ class Lcd(Frame):
 
     
     def trigger_phase2_intro(self):
-    # Open a new fullscreen window to display Phase 2
-    phase2 = Tk()
-    phase2.attributes('-fullscreen', True)
-    phase2.configure(bg="black")
-    phase2.title("Phase 2")
+        # Open a new fullscreen window to display Phase 2
+        phase2 = Tk()
+        phase2.attributes('-fullscreen', True)
+        phase2.configure(bg="black")
+        phase2.title("Phase 2")
     
-    display = Text(phase2, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
-    display.pack(expand=True, fill='both', padx=10, pady=10)
+        display = Text(phase2, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
+        display.pack(expand=True, fill='both', padx=10, pady=10)
 
-    def typewriter(text, delay=80, linebreak=True):
-        def inner(i=0):
-            if i < len(text):
-                display.config(state='normal')
-                display.insert(END, text[i])
-                display.config(state='disabled')
-                display.see(END)
-                phase2.after(delay, inner, i+1)
-            elif linebreak:
-                display.config(state='normal')
-                display.insert(END, "\n")
-                display.config(state='disabled')
-                display.see(END)
-        inner()
+        def typewriter(text, delay=80, linebreak=True):
+            def inner(i=0):
+                if i < len(text):
+                    display.config(state='normal')
+                    display.insert(END, text[i])
+                    display.config(state='disabled')
+                    display.see(END)
+                    phase2.after(delay, inner, i+1)
+                elif linebreak:
+                    display.config(state='normal')
+                    display.insert(END, "\n")
+                    display.config(state='disabled')
+                    display.see(END)
+            inner()
 
-    def finish_and_launch():
-        phase2.withdraw()
-        self._lpacman.config(state=NORMAL)  # Enable Pac-Man button after text finishes
+        pacman_button = Button(phase2, text="Play Pac_Man", font="Courier New", 24),
+                                bg="green", fg="white", command=lambda: self.launch_pacman_from_phase2(phase2))
+        pacman_button.pack(pady=30)
 
-    typewriter("PHASE 2", delay=100)
-    phase2.after(2000, lambda: typewriter(
-        "OBJECTIVE: Once all previous phases are complete, move on to the final phase: Pac-Man.\n"
-        "Eat all the Pac-Dots scattered throughout the maze to win!\n"
-        "To move, use keys 2-up, 4-left, 6-right, and 8-down on the keypad.\n"
-        "Make sure to avoid the ghosts...",
-        delay=80))
-    phase2.after(18000, finish_and_launch)  # Wait for typewriter to finish, then resume game
-
+        typewriter("PHASE 2", delay=100)
+        phase2.after(2000, lambda: typewriter(
+            "OBJECTIVE: Once all previous phases are complete, move on to the final phase: Pac-Man.\n"
+            "Eat all the Pac-Dots scattered throughout the maze to win!\n"
+            "To move, use keys 2-up, 4-left, 6-right, and 8-down on the keypad.\n"
+            "Make sure to avoid the ghosts...",
+            delay=80))
+        #phase2.after(18000, finish_and_launch)  # Wait for typewriter to finish, then resume game
 
     def check_all_phases_complete(self):
         if self.wires_done and self.toggles_done and self.button_done:
             self.trigger_phase2_intro()
 
-    def launch_pacman(self):
+    def launch_pacman_from_phase2(self, phase2_window):
         if self.pacman_app is None:
-            self.master.withdraw()
+            phase2_window.withdraw()
+            self.launch_pacman()
             window = Tk()
             window.attributes('-fullscreen', True)
             self.pacman_app = PacManApp(window)
