@@ -175,7 +175,7 @@ class Wires(PhaseThread):
             #self.lcd.after(0, lambda: self.lcd._lwires.config(text=f"Wires: {self._value}"))
             if self._value == self.correct_value:
                 self.lcd.wires_done = True
-                self.lcd.after(0, lambda: self.lcd._lwires.config(text="Complete!"))
+                self.lcd.after(0, lambda: self.lcd._lwires.config(text="Wires: Complete!"))
                 self.lcd.check_all_phases_complete()
                 break
             sleep(0.1)
@@ -206,7 +206,7 @@ class ogButton(PhaseThread):
             self._value = self._state.value
             if self._value and ogButton.colors[rgb_index] == "R":
                 self.lcd.button_done = True
-                self.lcd._lbutton.config(text="Button Complete!")
+                self.lcd.after(0, lambda: self.lcd._wires.config(text="Button: Complete!"))
                 self.lcd.check_all_phases_complete()
                 break
             blink_threshold = 5 if (self.lcd.wires_done and self.lcd.toggles_done) else 10
@@ -238,7 +238,7 @@ class Toggles(PhaseThread):
             #self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
             if self._value == self.correct_value:
                 self.lcd.toggles_done = True
-                self.lcd._ltoggles.config(text="Toggles Complete!")
+                self.lcd.after(0, lambda: self.lcd._ltoggles.config(text="Toggles: Complete!"))
                 self.lcd.check_all_phases_complete()
                 break
             sleep(0.1)
