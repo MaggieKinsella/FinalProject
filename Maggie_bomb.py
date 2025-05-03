@@ -206,7 +206,7 @@ class ogButton(PhaseThread):
             self._value = self._state.value
             if self._value and ogButton.colors[rgb_index] == "R":
                 self.lcd.button_done = True
-                self.lcd.after(0, lambda: self.lcd._wires.config(text="Button: Complete!"))
+                self.lcd.after(0, lambda: self.lcd._lbutton.config(text="Button: Complete!"))
                 self.lcd.check_all_phases_complete()
                 break
             blink_threshold = 5 if (self.lcd.wires_done and self.lcd.toggles_done) else 10
