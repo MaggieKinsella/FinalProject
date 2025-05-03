@@ -486,10 +486,10 @@ def run_main_gui():
     toggles.start()
 
     window.mainloop()
-    
+
+#----INTRO------------------------------------------------------------------------------------------------
 import tkinter as tk
 from threading import Thread
-from main_bomb_code import run_main_gui  # Make sure this import path is correct
 
 root = tk.Tk()
 root.attributes('-fullscreen', True)
@@ -498,7 +498,7 @@ root.title("Intro")
 text_display = tk.Text(root, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
 text_display.pack(expand=True, fill='both', padx=10, pady=10)
 
-def typewriter(text, delay=100, linebreak=True):
+def typewriter(text, delay=50, linebreak=True):
     def inner(i=0):
         if i < len(text):
             text_display.config(state='normal')
@@ -519,18 +519,27 @@ def intro_phase1():
     text_display.config(state='disabled')
     typewriter("PHASE 1", delay=100)
     root.after(2000, lambda: typewriter(
-        "OBJECTIVE: Eat all the Pac-Dots scattered throughout the maze to complete the level. Avoid the ghosts...",
-        delay=80))
+        "OBJECTIVE: Disable the toggles, wires, and button",
+        delay=50))
 
+def intro_phase2():
+    text_display.config(state='normal')
+    text_display.delete('1.0', tk.END)
+    text_display.config(state='disabled')
+    typewriter("PHASE 2", delay=100)
+    root.after(2000, lambda: typewriter(
+        "OBJECTIVE: Once you have disabled all previous phases move on to the final phase, Pac-Man\Eat all the Pac-Dots scattered throughout the maze to win!\nTo move use keys 2-up, 4-left, 6-right, and 8-down on keypad.\nMake sure to avoid the ghosts...",
+        delay=50))
+    
 def switch_to_main_gui():
-    root.destroy()
+    root.withdraw()
     Thread(target=run_main_gui).start()
 
 # Sequence
 typewriter("DEFUSE THE BOMB", delay=100)
-root.after(2500, lambda: typewriter("OBJECTIVE: COMPLETE ALL 4 PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80))
-root.after(15000, intro_phase1)
-root.after(25000, switch_to_main_gui)
+root.after(8000, lambda: typewriter("OBJECTIVE: COMPLETE ALL PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80))
+root.after(16000, intro_phase1)
+root.after(26000, switch_to_main_gui)
 
 root.mainloop()
 
