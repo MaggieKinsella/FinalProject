@@ -427,59 +427,112 @@ class PacManApp(Frame):
         return not (x2 < a1 or x1 > a2 or y2 < b1 or y1 > b2)
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────────
-WIDTH = 800
-HEIGHT = 600
+def run_main_gui():
+    global timer, matrix keypad
+    
+    WIDTH = 800
+    HEIGHT = 600
 
-window = Tk()
-gui = Lcd(window)
+    window = Tk()
+    gui = Lcd(window)
 
-# Timer setup
-i2c = board.I2C()
-display = Seg7x4(i2c)
-display.brightness = 0.5
-timer = Timer(COUNTDOWN, display)
-gui.setTimer(timer)
+    # Timer setup
+    i2c = board.I2C()
+    display = Seg7x4(i2c)
+    display.brightness = 0.5
+    timer = Timer(COUNTDOWN, display)
+    gui.setTimer(timer)
 
-# Keypad setup
-keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
-keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
-for pin in keypad_cols + keypad_rows:
-    pin.direction = Direction.INPUT
-    pin.pull = Pull.DOWN
-keypad_keys = ((1,2,3), (4,5,6), (7,8,9), ("*",0,"#"))
-matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
-keypad = Keypad(gui, matrix_keypad)
+    # Keypad setup
+    keypad_cols = [DigitalInOut(i) for i in (board.D10, board.D9, board.D11)]
+    keypad_rows = [DigitalInOut(i) for i in (board.D5, board.D6, board.D13, board.D19)]
+    for pin in keypad_cols + keypad_rows:
+        pin.direction = Direction.INPUT
+        pin.pull = Pull.DOWN
+    keypad_keys = ((1,2,3), (4,5,6), (7,8,9), ("*",0,"#"))
+    matrix_keypad = Matrix_Keypad(keypad_rows, keypad_cols, keypad_keys)
+    keypad = Keypad(gui, matrix_keypad)
 
-# Wires setup
-wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
-for pin in wire_pins:
-    pin.direction = Direction.INPUT
-    pin.pull = Pull.DOWN
-wires = Wires(gui, wire_pins)
+    # Wires setup
+    wire_pins = [DigitalInOut(i) for i in (board.D14, board.D15, board.D18, board.D23, board.D24)]
+    for pin in wire_pins:
+        pin.direction = Direction.INPUT
+        pin.pull = Pull.DOWN
+    wires = Wires(gui, wire_pins)
 
-# Button setup
-button_input = DigitalInOut(board.D4)
-button_input.direction = Direction.INPUT
-button_input.pull = Pull.DOWN
-button_RGB = [DigitalInOut(i) for i in (board.D17, board.D27, board.D22)]
-for pin in button_RGB:
-    pin.direction = Direction.OUTPUT
-    pin.value = True
-button = ogButton(gui, button_input, button_RGB)
-gui.setButton(button)
+    # Button setup
+    button_input = DigitalInOut(board.D4)
+    button_input.direction = Direction.INPUT
+    button_input.pull = Pull.DOWN
+    button_RGB = [DigitalInOut(i) for i in (board.D17, board.D27, board.D22)]
+    for pin in button_RGB:
+        pin.direction = Direction.OUTPUT
+        pin.value = True
+    button = ogButton(gui, button_input, button_RGB)
+    gui.setButton(button)
 
-# Toggles setup
-toggle_pins = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
-for pin in toggle_pins:
-    pin.direction = Direction.INPUT
-    pin.pull = Pull.DOWN
-toggles = Toggles(gui, toggle_pins)
+    # Toggles setup
+    toggle_pins = [DigitalInOut(i) for i in (board.D12, board.D16, board.D20, board.D21)]
+    for pin in toggle_pins:
+        pin.direction = Direction.INPUT
+        pin.pull = Pull.DOWN
+    toggles = Toggles(gui, toggle_pins)
 
-# Start phase threads
-timer.start()
-keypad.start()
-wires.start()
-button.start()
-toggles.start()
+    # Start phase threads
+    timer.start()
+    keypad.start()
+    wires.start()
+    button.start()
+    toggles.start()
 
-window.mainloop()
+    window.mainloop()
+    
+import tkinter as tk
+from threading import Thread
+from main_bomb_code import run_main_gui  # Make sure this import path is correct
+
+root = tk.Tk()
+root.attributes('-fullscreen', True)
+root.configure(bg="black")
+root.title("Intro")
+text_display = tk.Text(root, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
+text_display.pack(expand=True, fill='both', padx=10, pady=10)
+
+def typewriter(text, delay=100, linebreak=True):
+    def inner(i=0):
+        if i < len(text):
+            text_display.config(state='normal')
+            text_display.insert(tk.END, text[i])
+            text_display.config(state='disabled')
+            text_display.see(tk.END)
+            root.after(delay, inner, i+1)
+        elif linebreak:
+            text_display.config(state='normal')
+            text_display.insert(tk.END, "\n")
+            text_display.config(state='disabled')
+            text_display.see(tk.END)
+    inner()
+
+def intro_phase1():
+    text_display.config(state='normal')
+    text_display.delete('1.0', tk.END)
+    text_display.config(state='disabled')
+    typewriter("PHASE 1", delay=100)
+    root.after(2000, lambda: typewriter(
+        "OBJECTIVE: Eat all the Pac-Dots scattered throughout the maze to complete the level. Avoid the ghosts...",
+        delay=80))
+
+def switch_to_main_gui():
+    root.destroy()
+    Thread(target=run_main_gui).start()
+
+# Sequence
+typewriter("DEFUSE THE BOMB", delay=100)
+root.after(2500, lambda: typewriter("OBJECTIVE: COMPLETE ALL 4 PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80))
+root.after(15000, intro_phase1)
+root.after(25000, switch_to_main_gui)
+
+root.mainloop()
+
+if __name__=="__main__":
+    main()
