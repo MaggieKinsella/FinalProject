@@ -428,7 +428,7 @@ class PacManApp(Frame):
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────────
 def run_main_gui():
-    global timer, matrix keypad
+    global timer, matrix_keypad
     
     WIDTH = 800
     HEIGHT = 600
