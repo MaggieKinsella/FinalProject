@@ -32,12 +32,6 @@ class Lcd(Frame):
         self.columnconfigure(1, weight=2)
         self.pack(fill=BOTH, expand=True)
 
-        #self._ltimer = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Time left: ")
-        #self._ltimer.grid(row=0, column=0, columnspan=2, sticky=W)
-
-        #self._lkeypad = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Combination: ")
-        #self._lkeypad.grid(row=1, column=0, columnspan=2, sticky=W)
-
         self._lphases = Label(self, bg="black", fg="white", font=("Courier New", 24), text="Phases Complete: 0/3")
         self._lphases.grid(row=0, column=0, columnspan=2, sticky=W)
 
@@ -90,7 +84,7 @@ class Lcd(Frame):
         self._timer._display.fill(0)
         for pin in self._button._rgb:
             pin.value = True
-        exit(0)
+        self.master.destroy()
 
 # ─── PhaseThread Base ────────────────────────────────────────────────────────────
 class PhaseThread(Thread):
