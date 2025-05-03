@@ -59,53 +59,13 @@ class Lcd(Frame):
                                      text="Quit", command=self.quit)
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
 
-    
-    def trigger_phase2_intro(self):
-        # Open a new fullscreen window to display Phase 2
-        phase2 = Tk()
-        phase2.attributes('-fullscreen', True)
-        phase2.configure(bg="black")
-        phase2.title("Phase 2")
-    
-        display = Text(phase2, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
-        display.pack(expand=True, fill='both', padx=10, pady=10)
-
-        def typewriter(text, delay=80, linebreak=True):
-            def inner(i=0):
-                if i < len(text):
-                    display.config(state='normal')
-                    display.insert(END, text[i])
-                    display.config(state='disabled')
-                    display.see(END)
-                    phase2.after(delay, inner, i+1)
-                elif linebreak:
-                    display.config(state='normal')
-                    display.insert(END, "\n")
-                    display.config(state='disabled')
-                    display.see(END)
-            inner()
-
-        pacman_button = Button(phase2, text="Play Pac_Man", font="Courier New", 24),
-                                bg="green", fg="white", command=lambda: self.launch_pacman_from_phase2(phase2))
-        pacman_button.pack(pady=30)
-
-        typewriter("PHASE 2", delay=100)
-        phase2.after(2000, lambda: typewriter(
-            "OBJECTIVE: Once all previous phases are complete, move on to the final phase: Pac-Man.\n"
-            "Eat all the Pac-Dots scattered throughout the maze to win!\n"
-            "To move, use keys 2-up, 4-left, 6-right, and 8-down on the keypad.\n"
-            "Make sure to avoid the ghosts...",
-            delay=80))
-        #phase2.after(18000, finish_and_launch)  # Wait for typewriter to finish, then resume game
-
     def check_all_phases_complete(self):
         if self.wires_done and self.toggles_done and self.button_done:
-            self.trigger_phase2_intro()
+            self._lpacman.config(state=NORMAL)
 
-    def launch_pacman_from_phase2(self, phase2_window):
+    def launch_pacman(self):
         if self.pacman_app is None:
-            phase2_window.withdraw()
-            self.launch_pacman()
+            self.master.withdraw()
             window = Tk()
             window.attributes('-fullscreen', True)
             self.pacman_app = PacManApp(window)
@@ -557,18 +517,21 @@ def intro_phase1():
     text_display.config(state='normal')
     text_display.delete('1.0', tk.END)
     text_display.config(state='disabled')
-    typewriter("PHASE 1", delay=100)
-    root.after(2000, lambda: typewriter(
+    typewriter("PHASE 1-3", delay=100)
+    root.after(1000, lambda: typewriter(
         "OBJECTIVE: Disable the toggles, wires, and button",
-        delay=80))
+        delay=60))
 
 def intro_phase2():
     text_display.config(state='normal')
     text_display.delete('1.0', tk.END)
     text_display.config(state='disabled')
-    typewriter("PHASE 2", delay=100)
+    typewriter("PHASE 4", delay=100)
     root.after(2000, lambda: typewriter(
-        "OBJECTIVE: Once you have disabled all previous phases move on to the final phase, Pac-Man\Eat all the Pac-Dots scattered throughout the maze to win!\nTo move use keys 2-up, 4-left, 6-right, and 8-down on keypad.\nMake sure to avoid the ghosts...",
+        "OBJECTIVE: Once you have disabled all previous phases move on to the final phase, Pac-Man.\n"
+        "Eat all the Pac-Dots scattered throughout the maze to win!\n"
+        "To move use keys 2-up, 4-left, 6-right, and 8-down on keypad.\n"
+        "Make sure to avoid the ghosts...",
         delay=80))
     
 def switch_to_main_gui():
@@ -578,8 +541,9 @@ def switch_to_main_gui():
 # Sequence
 typewriter("DEFUSE THE BOMB", delay=100)
 root.after(2000, lambda: typewriter("OBJECTIVE: COMPLETE ALL PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80))
-root.after(8000, intro_phase1)
-root.after(40000, switch_to_main_gui)
+root.after(10000, intro_phase1)
+root.after(30000, intro_phase2)
+root.after(58000, switch_to_main_gui)
 
 root.mainloop()
 
