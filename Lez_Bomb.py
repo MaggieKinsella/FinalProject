@@ -270,32 +270,51 @@ class PacManApp(Frame):
 
         # Obstacles
         self.obstacles = [
+            # 1st obsticle (top left)
             self.canvas.create_rectangle(60,  60, 120,  75, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(60,  60,  75, 180, fill="black", outline="blue", width=5),
+            # 2nd obsticle (bottom left)
             self.canvas.create_rectangle(60, 375, 120, 390, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(60, 375,  75, 255, fill="black", outline="blue", width=5),
+            # 3rd obsticle (top middle left)
             self.canvas.create_rectangle(180,   0, 195,  75, fill="black", outline="blue", width=5),
+            # 4th obsticle (bottom middle left)
             self.canvas.create_rectangle(180, 375, 195, 450, fill="black", outline="blue", width=5),
+            # 5th obsticle (top middle)
             self.canvas.create_rectangle(265,  60, 435,  75, fill="black", outline="blue", width=5),
+            # 6th obsticle (bottom middle)
             self.canvas.create_rectangle(265, 375, 435, 390, fill="black", outline="blue", width=5),
+            # 7th obsticle (top middle right)
             self.canvas.create_rectangle(505,   0, 520,  75, fill="black", outline="blue", width=5),
+            # 8th obsticle (bottom middle right)
             self.canvas.create_rectangle(505, 375, 520, 450, fill="black", outline="blue", width=5),
+            # 9th obsticle (top right)
             self.canvas.create_rectangle(625,  60, 580,  75, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(625,  60, 640, 180, fill="black", outline="blue", width=5),
+            # 10th obsticle (bottom right)
             self.canvas.create_rectangle(640, 390, 580, 375, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(640, 390, 625, 255, fill="black", outline="blue", width=5),
+            # 11th obsticle (top right center)
             self.canvas.create_rectangle(505, 165, 570, 180, fill="black", outline="blue", width=5),
+            # 12th obsticle (bottom right center)
             self.canvas.create_rectangle(505, 255, 570, 270, fill="black", outline="blue", width=5),
+            # 13th obsticle (center)
             self.canvas.create_rectangle(265, 165, 305, 180, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(265, 165, 280, 270, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(280, 255, 435, 270, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(420, 180, 435, 270, fill="black", outline="blue", width=5),
             self.canvas.create_rectangle(395, 165, 435, 180, fill="black", outline="blue", width=5),
+            # 14th obsticle (top left center)
             self.canvas.create_rectangle(130, 165, 180, 180, fill="black", outline="blue", width=5),
+            # 15th obsticle (bottom left center)
             self.canvas.create_rectangle(130, 255, 180, 270, fill="black", outline="blue", width=5),
+            # Left border wall
             self.canvas.create_rectangle(  0,   0,   0, 450, fill="black", outline="black"),
+            # Top border wall
             self.canvas.create_rectangle(  0,   0, 700,   0, fill="black", outline="black"),
+            # Right border wall
             self.canvas.create_rectangle(700,   0, 700, 450, fill="black", outline="black"),
+            # Bottom border wall
             self.canvas.create_rectangle(  0, 450, 800, 450, fill="black", outline="black"),
         ]
 
@@ -325,11 +344,13 @@ class PacManApp(Frame):
     def move(self, dx, dy):
         if not self.game_running:
             return
+        # get pacmans current position
         coords = self.canvas.coords(self.pacman)
         new_coords = [coords[0]+dx, coords[1]+dy, coords[2]+dx, coords[3]+dy]
         for obs in self.obstacles:
             if self.is_collision(new_coords, self.canvas.coords(obs)):
                 return
+        # move pacman
         self.canvas.move(self.pacman, dx, dy)
         for col in self.collectibles[:]:
             if self.is_collision(new_coords, self.canvas.coords(col)):
@@ -341,7 +362,7 @@ class PacManApp(Frame):
          # ─── STOP THE TIMER ─────────────────────────
             import __main__
             __main__.timer.pause()
-
+    # keypad on bomb controls movement
     def check_keypad(self):
         keys = self.matrix_keypad.pressed_keys
         if keys:
@@ -352,6 +373,7 @@ class PacManApp(Frame):
                 elif key == 6: self.move(15,  0)
         self.window.after(100, self.check_keypad)
 
+    # ghost chase
     def chase_pacman(self):
         if not self.game_running: return
         self.move_ghost_toward_pacman(self.ghost)
@@ -365,6 +387,7 @@ class PacManApp(Frame):
             self.canvas.create_text(350, 225, text="Game Over", fill="white", font=("Arial", 90))
         self.window.after(100, self.chase_pacman2)
 
+    # ghost movements
     def move_ghost_toward_pacman(self, ghost):
         g = self.canvas.coords(ghost)
         p = self.canvas.coords(self.pacman)
