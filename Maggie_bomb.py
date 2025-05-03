@@ -171,7 +171,8 @@ class Wires(PhaseThread):
         self._running = True
         while True:
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd.after(0, lambda: self.lcd._lwires.config(text=f"Wires: {self._value}"))
+            self.lcd.after(0, lambda val=self._value: self.lcd._lwires.config(text=f"Wires: {val}"))
+            #self.lcd.after(0, lambda: self.lcd._lwires.config(text=f"Wires: {self._value}"))
             if self._value == self.correct_value:
                 self.lcd.wires_done = True
                 self.lcd._lwires.config(text="Wires Complete")
@@ -233,7 +234,8 @@ class Toggles(PhaseThread):
         self._running = True
         while True:
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
-            self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
+            self.lcd.after(0, lambda val=self._value: self.lcd._ltoggles.config(text=f"Toggles: {val}"))
+            #self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
             if self._value == self.correct_value:
                 self.lcd.toggles_done = True
                 self.lcd._ltoggles.config(text="Toggles Complete!")
