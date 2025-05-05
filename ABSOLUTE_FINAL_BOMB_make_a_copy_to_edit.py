@@ -1,3 +1,9 @@
+#Leslye, Maggie, Abigail
+# May 5, 2025
+# TECH 695: CSC 102-1
+# Dr. Abhilash Kancharla
+# Defuse-the-Bomb GUI: handles three hardware phases (wires, toggles, button) before launching a Pac-Man mini-game to “defuse” the bomb.
+
 from tkinter import *
 import tkinter
 from threading import Thread
