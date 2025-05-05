@@ -1,8 +1,10 @@
-#Leslye, Maggie, Abigail
-# May 5, 2025
+###################################
+# CSC 102 Defuse the Bomb Project
+# Configuration file
 # TECH 695: CSC 102-1
 # Dr. Abhilash Kancharla
-# Defuse-the-Bomb GUI: handles three hardware phases (wires, toggles, button) before launching a Pac-Man mini-game to “defuse” the bomb.
+# Team: Leslye, Maggie, Abigail
+###################################
 
 from tkinter import *
 import tkinter
