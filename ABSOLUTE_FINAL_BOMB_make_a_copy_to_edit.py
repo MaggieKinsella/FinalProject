@@ -6,6 +6,7 @@
 # Team: Leslye, Maggie, Abigail
 ###################################
 
+# Import Libraries
 from tkinter import *
 import tkinter
 from threading import Thread
@@ -34,7 +35,8 @@ class Lcd(Frame):
         self.toggles_done = False
         self.button_done = False
         self.setup()
-
+        
+    # set up gui picture
     def setup(self):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)
@@ -64,14 +66,17 @@ class Lcd(Frame):
                                      text="Quit", command=self.quit)
         self._lquit.grid(row=5, column=1, sticky=W, padx=25, pady=40)
 
+    # check wires, toggles, and button is complete before launching pacman
     def check_all_phases_complete(self):
         count = sum([self.wires_done, self.toggles_done, self.button_done])
         self._lphases.config(text=f"Phases Complete: {count}/3")
         if self.wires_done and self.toggles_done and self.button_done:
             self._lpacman.config(state=NORMAL)
 
+    # launch pacman window
     def launch_pacman(self):
         if self.pacman_app is None:
+            # closes main screen 
             self.master.withdraw()
             window = Tk()
             window.attributes('-fullscreen', True)
@@ -116,6 +121,7 @@ class Timer(PhaseThread):
         self._min = f"{self._value // 60}".zfill(2)
         self._sec = f"{self._value % 60}".zfill(2)
 
+    # start timer when bomb launches
     def run(self):
         self._running = True
         while True:
@@ -179,10 +185,11 @@ class Wires(PhaseThread):
         while True:
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
             self.lcd.after(0, lambda val=self._value: self.lcd._lwires.config(text=f"Wires: {val}"))
-            #self.lcd.after(0, lambda: self.lcd._lwires.config(text=f"Wires: {self._value}"))
+            # if wires are in correct order display complete
             if self._value == self.correct_value:
                 self.lcd.wires_done = True
                 self.lcd.after(0, lambda: self.lcd._lwires.config(text="Wires: Complete!"))
+                # check that phase is complete
                 self.lcd.check_all_phases_complete()
                 break
             sleep(0.1)
@@ -211,6 +218,7 @@ class ogButton(PhaseThread):
             self._rgb[1].value = (ogButton.colors[rgb_index] != "G")
             self._rgb[2].value = (ogButton.colors[rgb_index] != "B")
             self._value = self._state.value
+            # if button is clicked while red, button complete
             if self._value and ogButton.colors[rgb_index] == "R":
                 self.lcd.button_done = True
                 self.lcd.after(0, lambda: self.lcd._lbutton.config(text="Button: Complete!"))
@@ -242,10 +250,11 @@ class Toggles(PhaseThread):
         while True:
             self._value = "".join([str(int(pin.value)) for pin in self._pins])
             self.lcd.after(0, lambda val=self._value: self.lcd._ltoggles.config(text=f"Toggles: {val}"))
-            #self.lcd.after(0, lambda: self.lcd._ltoggles.config(text=f"Toggles: {self._value}"))
+            # if toggles in correct order, toggles complete
             if self._value == self.correct_value:
                 self.lcd.toggles_done = True
                 self.lcd.after(0, lambda: self.lcd._ltoggles.config(text="Toggles: Complete!"))
+                # check off that toggles are complete
                 self.lcd.check_all_phases_complete()
                 break
             sleep(0.1)
@@ -327,7 +336,7 @@ class PacManApp(Frame):
             self.canvas.create_rectangle(  0, 450, 800, 450, fill="black", outline="black"),
         ]
 
-        # Collectibles
+        # Collectibles- for pacman to eat
         self.collectibles = [
             self.canvas.create_oval( 25,  70,  35,  80, fill="pink", outline="pink"),
             self.canvas.create_oval(150, 210, 160, 220, fill="pink", outline="pink"),
@@ -350,6 +359,7 @@ class PacManApp(Frame):
 
         self.update()
 
+    # move function
     def move(self, dx, dy):
         if not self.game_running:
             return
@@ -368,26 +378,28 @@ class PacManApp(Frame):
         if not self.collectibles:
             self.game_running = False
             self.canvas.create_text(350, 225, text="You Win!", fill="white", font=("Arial", 90))
-         # ─── STOP THE TIMER ─────────────────────────
+             # stop the timer
             import __main__
             __main__.timer.pause()
+            
     # keypad on bomb controls movement
     def check_keypad(self):
         keys = self.matrix_keypad.pressed_keys
         if keys:
             for key in keys:
-                if   key == 2: self.move(0, -15)
-                elif key == 8: self.move(0,  15)
-                elif key == 4: self.move(-15, 0)
-                elif key == 6: self.move(15,  0)
+                if   key == 2: self.move(0, -15) # up
+                elif key == 8: self.move(0,  15) # down
+                elif key == 4: self.move(-15, 0) # left
+                elif key == 6: self.move(15,  0) # right
         self.window.after(100, self.check_keypad)
 
-    # ghost chase
+    # ghost chase (red ghost)
     def chase_pacman(self):
         if not self.game_running: return
         self.move_ghost_toward_pacman(self.ghost)
         self.window.after(110, self.chase_pacman)
 
+    # ghost chase (cyan ghost)
     def chase_pacman2(self):
         if not self.game_running: return
         self.move_ghost_toward_pacman(self.ghost2)
@@ -424,6 +436,7 @@ class PacManApp(Frame):
             self.canvas.move(ghost, dx, dy)
             break
 
+        # pacman caught by ghosts- game over
         if self.is_collision(self.canvas.coords(ghost), p):
             self.game_running = False
             self.canvas.create_text(350, 225, text="Game Over", fill="white", font=("Arial", 90))
@@ -492,12 +505,15 @@ def run_main_gui():
     button.start()
     toggles.start()
 
+    # launch window (main screen)
     window.mainloop()
 
 #----INTRO------------------------------------------------------------------------------------------------
+# Libraries
 import tkinter as tk
 from threading import Thread
 
+# set up for introduction screen
 root = tk.Tk()
 root.attributes('-fullscreen', True)
 root.configure(bg="black")
@@ -505,6 +521,7 @@ root.title("Intro")
 text_display = tk.Text(root, bg="black", fg="white", font=("Courier", 30), state='disabled', wrap="word")
 text_display.pack(expand=True, fill='both', padx=10, pady=10)
 
+# type letter by letter
 def typewriter(text, delay=80, linebreak=True):
     def inner(i=0):
         if i < len(text):
@@ -520,6 +537,7 @@ def typewriter(text, delay=80, linebreak=True):
             text_display.see(tk.END)
     inner()
 
+# second screen- explaining wires, toggles, and button
 def intro_phase1():
     text_display.config(state='normal')
     text_display.delete('1.0', tk.END)
@@ -529,6 +547,7 @@ def intro_phase1():
         "OBJECTIVE: Disable the toggles, wires, and button",
         delay=80))
 
+# thirs screen- explains how to play pacman 
 def intro_phase2():
     text_display.config(state='normal')
     text_display.delete('1.0', tk.END)
@@ -540,14 +559,15 @@ def intro_phase2():
         "To move use keys 2-up, 4-left, 6-right, and 8-down on keypad.\n"
         "Make sure to avoid the ghosts...",
         delay=80))
-    
+
+# swithces from intro to main gui
 def switch_to_main_gui():
     root.withdraw()
     Thread(target=run_main_gui).start()
 
-# Sequence
+# Sequence of screens
 typewriter("DEFUSE THE BOMB", delay=100)
-root.after(2000, lambda: typewriter("OBJECTIVE: COMPLETE ALL PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80))
+root.after(2000, lambda: typewriter("OBJECTIVE: COMPLETE ALL PHASES QUICKLY IN ORDER TO DEFUSE THE BOMB. OR ELSE...", delay=80)) # first screen
 root.after(10000, intro_phase1)
 root.after(30000, intro_phase2)
 root.after(58000, switch_to_main_gui)
